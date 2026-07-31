@@ -1,160 +1,142 @@
 <div align="center">
-  <img src="public/icq-logo.png" width="88" alt="ICQ Logo" />
-  <h1>Retrogram - Multi Messenger</h1> 
+  <img src="public/icq-logo.png" width="88" alt="ISeekU" />
+  <h1>ISeekU</h1>
   <p>
-    Retro <strong>ICQ 5</strong>-style multi-messenger — built with <strong>Electron + React</strong>.<br/>
-    Manage <strong>WhatsApp</strong> and <strong>Telegram</strong> from one classic dark-teal desktop app.
+    An ICQ client — the 2005 one, rebuilt.<br/>
+    Numeric UINs, the Contact List, the eight Statuses. Speaks XMPP,
+    so it reaches the <a href="https://icqr.net">icqr.net</a> network.
   </p>
 
   <img src="https://img.shields.io/badge/Electron-29-47848F?logo=electron&logoColor=white" alt="Electron" />
   <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-555?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyeiIvPjwvc3ZnPg==&logoColor=white" alt="Platform" />
+  <img src="https://img.shields.io/badge/XMPP-RFC%206120%2F6121-4DAB27" alt="XMPP" />
+  <img src="https://img.shields.io/badge/tests-243-4DAB27" alt="243 tests" />
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT" />
-  <img src="https://img.shields.io/github/v/release/Felix-Helleckes/ICQ?label=latest&color=teal" alt="Latest Release" />
-
-  <br/><br/>
-
-  [![Watch Live](https://img.shields.io/badge/▶_Watch_Live-YouTube-red?style=flat-square&logo=youtube)](https://www.youtube.com/@TheEfficientDev)
-  [![Portfolio](https://img.shields.io/badge/Portfolio-felix--helleckes.github.io-0a66c2?style=flat-square&logo=github)](https://felix-helleckes.github.io/)
-
-  <br/><br/>
-
-  <img src="marketing/hero-en.svg" width="100%" alt="ICQ Retrogram — animated demo: contacts load, a message arrives, a reply is sent, the skin switches colour" />
 </div>
 
-
-> *QR Code Login screens — no personal data shown. Once connected, the sidebar fills with your contacts sorted by recency.*
-
 ---
 
-## Features
+Numeric UINs, the Contact List with its Groups and status icons, the eight
+Statuses including Free For Chat and Invisible, Away Messages, Authorization
+requests, a permanent local Message Archive. Windows XP chrome, Tahoma 8pt,
+16-pixel rows, and no rounded corners anywhere.
 
-| | Feature | Details |
-|--|---------|---------|
-| 🎨 | **ICQ 5 dark teal skin** | CSS variables, `rem`-based sizing, A−/A+ font controls |
-| 💬 | **WhatsApp** | QR login · persistent session · images · videos · GIFs · stickers · read receipts |
-| ✈️ | **Telegram** | QR or phone number login · 2FA · photos · videos · GIFs · animated stickers |
-| 🪟 | **Separate chat windows** | Each contact gets its own floating window — true ICQ 5 style |
-| 🗂️ | **Collapsible groups** | Groups folded away at top · per-service group sound toggle |
-| 🖼️ | **Profile pictures** | Background-loaded for contacts + your own profile in the header |
-| 🔔 | **Classic ICQ sound** | Global 🔔/🔕 toggle + separate group sound control per service |
-| ✓✓ | **Read receipts** | WhatsApp ack states: pending · sent · delivered · read (blue ✓✓) |
-| ⌨️ | **Typing indicator** | Animated *tippt…* shown live in the chat header |
-| 🔍 | **Media lightbox** | Click any image or video to view fullscreen |
-| 🔄 | **Live contact list** | Unread badges · last message preview · auto-sort by recency |
-| 📦 | **Portable build** | Single `.exe` — no installation required |
-| 🛫 | **File Transfer** | Drag and Drop and File Dialog Window included|
-| 🎮 | **Games** | Slide a Lama and Pool included for free|
+Underneath it is XMPP, so it talks to the network where the UINs actually are.
+WhatsApp and Telegram come along as extra accounts, inherited from the project
+this is forked from.
 
-# First-run warnings
+Forked from [Felix-Helleckes/ICQ](https://github.com/Felix-Helleckes/ICQ) (MIT).
 
-**Windows — SmartScreen:** Click **"More info"** → **"Run anyway"**
+## Status
 
-**macOS — Gatekeeper:** Right-click the `.app` → **"Open"** → **"Open"**  
+**Working:** signing in, creating a UIN, the Contact List, one-to-one Messages,
+typing notifications, delivery receipts, Status and Status Text, Away Messages,
+Alert-when-online, and a local History that reads the archives the official ICQ
+Reborn client writes.
 
-Or in Terminal:  `xattr -cr /Applications/ICQ\ Messenger.app`
----
+**Not yet built:** User Details, Add/Find Contact, the Message Archive browser,
+Preferences, file transfer, avatars.
 
-# Quick Start
+[`docs/ROAD_TO_ISEEKU.md`](docs/ROAD_TO_ISEEKU.md) is the backlog;
+[`docs/STATUS.md`](docs/STATUS.md) is what is actually done.
 
-### Requirements
+## The network
 
-- **Node.js** 18+ (LTS)
-- **npm** 9+
-- Windows, macOS, or Linux
+Measured against the live icqr.net service, not taken from documentation:
 
-> On **Linux**, Puppeteer (WhatsApp) needs: `libnss3 libatk-bridge2.0-0 libx11-xcb1 libdrm2 libgbm1 libasound2`
+| | |
+|---|---|
+| Address | `132.145.202.182:5222`, plain TCP |
+| Protocol | XMPP (RFC 6120/6121) — not OSCAR |
+| XMPP domain | `132.145.202.182`, the IP literal itself |
+| JID | `<UIN>@132.145.202.182` |
+| Encryption | **none** — the server advertises no STARTTLS |
+| SASL | `PLAIN` only |
+| Registration | XEP-0077 open |
 
-### Install & run
+### Read this part
+
+**The icqr.net server does not encrypt anything.** Your password, and every
+message you send, cross the network in a form anyone on the path can read.
+
+ISeekU will not connect to such a server unless you say so, every session. The
+refusal happens after the server has described itself and *before* your
+password reaches the socket, and an account connected in the clear stays
+visibly marked for as long as it is signed in. There is no "do not show this
+again", on purpose.
+
+Where a server does offer encryption, ISeekU uses it and prefers SCRAM over
+PLAIN. A server that offered encryption last time and stops is refused outright
+rather than accepted quietly.
+
+Your password is stored via Electron `safeStorage` (DPAPI on Windows, Keychain
+on macOS, libsecret on Linux) and never travels back out of the main process.
+
+## Running it
 
 ```bash
-git clone https://github.com/felix-helleckes/ICQ.git
-cd ICQ
 npm install
+```
+
+```bash
 npm start
 ```
 
-`npm start` launches the React dev server and Electron simultaneously.
+### Without starting the app
 
----
-
-## Login
-
-### WhatsApp
-1. Switch to the **WhatsApp** tab
-2. Wait a moment — Puppeteer/Chrome starts in the background
-3. Scan the QR code with your phone → **WhatsApp → Linked Devices → Link a Device**
-4. Done — session is saved and survives restarts
-
-### Telegram
-1. Switch to the **Telegram** tab
-2. Choose **QR code** (scan with Telegram mobile) **or** enter your **phone number**
-3. Enter the code sent to your phone (+ 2FA password if enabled)
-4. Done — session stored in `data/telegram.session`
-
-> No API keys or developer accounts needed for either service.
-
----
-
-## Build
-
-npm run build
+Look at the skin:
 
 ```bash
-# Windows — NSIS installer + Portable
-npx electron-builder --win nsis portable
-
-# macOS — DMG (unsigned)
-npx electron-builder --mac dmg
-
-# Linux — AppImage + .deb
-npx electron-builder --linux AppImage deb
+start tools/skin-preview.html
 ```
 
-Output goes to the `dist/` folder.
+Ask a server what it supports:
 
----
-
-## Project Structure
-
-```
-├── electron/
-│   ├── main.js              # Main process · IPC handlers · multi-window management
-│   ├── preload.js           # contextBridge — exposes window.api to React
-│   ├── whatsapp-bridge.js   # WhatsApp via whatsapp-web.js + Puppeteer
-│   └── telegram-bridge.js   # Telegram MTProto via GramJS
-├── src/
-│   ├── App.js               # Sidebar / contact list window
-│   ├── ChatApp.js           # Per-contact chat window
-│   ├── index.css            # Global ICQ 5 styles + CSS variables
-│   └── components/
-│       ├── TitleBar.js      # Frameless title bar (minimize / maximize / close)
-│       ├── Sidebar.js       # Service tabs · contact list · groups · sound controls
-│       ├── ChatWindow.js    # Messages · emoji picker · media · lightbox · read receipts
-│       └── LoginPanel.js    # QR + phone login for both services
-├── public/
-│   ├── icq-logo.png         # ICQ logo (app icon source)
-│   ├── whatsapp-logo.svg    # WhatsApp logo (service tab)
-│   ├── telegram-logo.svg    # Telegram logo (service tab)
-│   ├── icon.ico             # Generated Windows app icon
-│   └── sounds/
-│       └── icq-message.mp3  # Classic ICQ notification sound
-└── package.json
+```bash
+node tools/probe-server.js --uin YOUR_UIN --server 132.145.202.182 --out server-probe.json
 ```
 
----
+Sign in and watch what arrives:
 
-## Architecture Notes
+```bash
+node tools/icq-smoke.js --uin YOUR_UIN --server 132.145.202.182 --insecure --seconds 90
+```
 
-- **Multi-window** — each chat is a separate `BrowserWindow`, tracked in a `Map` and reused on re-open
-- **Broadcast pattern** — `BrowserWindow.getAllWindows().forEach(w => w.webContents.send(...))` keeps sidebar + chat windows in sync instantly
-- **Avatar cache** — avatars cached in main process (`Map`), pushed via `wa:avatar` / `tg:avatar` events, no re-fetching
-- **Non-blocking contact list** — `getChats()` / `getDialogs()` return immediately; avatars load in background loops
-- **IPC cleanup** — every listener returns a removal function used in `useEffect` — no memory leaks
-- **Font scaling** — `html { font-size }` set at runtime, all UI sizes in `rem`
-- **BigInt peer IDs** — Telegram IDs converted to `BigInt` before every GramJS API call to prevent silent lookup failures
+Both prompt for the password, store nothing, and keep it out of their logs.
+`--insecure` is required for icqr.net, and the run says why.
 
----
+### Tests
 
+```bash
+npm run test:electron
+```
 
+```bash
+npm run test:unit
+```
 
+## How it is put together
+
+```
+electron/lib/icq-*.js     the domain rules — Statuses, Contacts, History,
+                          the security gate. No I/O, fully unit tested.
+electron/icq/             the part that talks to a socket: connection,
+                          registration, and the account facade.
+electron/main.js          IPC, in the same icq:* / wa:* / tg:* pattern.
+src/skins/icq5.css        ICQ 5.1, every value sourced or marked ESTIMATED.
+src/components/icq/       Contact List, sign-in, Status menu, status icons.
+```
+
+[`CONTEXT.md`](CONTEXT.md) defines the vocabulary — the interface says "Contact
+List", never "roster". [`docs/adr/`](docs/adr/) records the decisions that are
+hard to reverse and would otherwise look like mistakes.
+
+## Credits and licence
+
+MIT, as inherited. Built on
+[Felix-Helleckes/ICQ](https://github.com/Felix-Helleckes/ICQ) by Felix
+Helleckes.
+
+Not affiliated with ICQ, its former owners, or the icqr.net project. The
+interface is an original recreation: no ICQ artwork is redistributed here, and
+the status icons are drawn from scratch.

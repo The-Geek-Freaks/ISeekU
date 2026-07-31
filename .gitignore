@@ -13,6 +13,12 @@ data/
 # Bundled Chromium (downloaded via scripts/download-chrome.js, not committed)
 puppeteer_cache/
 
+# Server probe reports — these carry the Owner's own account data (bound JID,
+# Contact List size, Group names) and must never be committed. Run
+# tools/probe-server.js locally and read the report locally.
+server-probe.json
+*-probe.json
+
 # Environment / secrets
 .env
 .env.local

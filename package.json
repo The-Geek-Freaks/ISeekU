@@ -1,16 +1,23 @@
 {
-  "name": "icq-messenger",
-  "version": "1.0.36",
-  "description": "A retro ICQ-style multi-messenger (WhatsApp + Telegram)",
+  "name": "iseeku",
+  "version": "2.0.0",
+  "description": "An authentic ICQ 5/6 client, speaking XMPP — with WhatsApp and Telegram as extra transports",
   "author": {
-    "name": "Felix Helleckes",
-    "email": "fhelleckes@gmail.com"
+    "name": "Alex",
+    "email": "Alexoland@web.de"
   },
+  "contributors": [
+    {
+      "name": "Felix Helleckes",
+      "email": "fhelleckes@gmail.com",
+      "url": "https://github.com/Felix-Helleckes/ICQ"
+    }
+  ],
   "license": "MIT",
   "homepage": ".",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Felix-Helleckes/ICQ.git"
+    "url": "https://github.com/TheGeekFreaks/ISeekU.git"
   },
   "main": "electron/main.js",
   "scripts": {
@@ -32,7 +39,9 @@
     "make-icon": "node scripts/make-icon.js"
   },
   "dependencies": {
+    "@xmpp/client": "^0.14.0",
     "electron-is-dev": "^2.0.0",
+    "ini": "^5.0.0",
     "qrcode": "^1.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -42,6 +51,9 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^15.0.7",
+    "@testing-library/user-event": "^14.5.2",
     "concurrently": "^8.2.2",
     "electron": "^29.0.0",
     "electron-builder": "^24.9.1",
@@ -62,9 +74,9 @@
     ]
   },
   "build": {
-    "appId": "com.icqmessenger.app",
-    "productName": "ICQ Messenger",
-    "copyright": "Copyright © Felix Helleckes2026",
+    "appId": "net.thegeekfreaks.iseeku",
+    "productName": "ISeekU",
+    "copyright": "Copyright © 2026 Alex. Forked from ICQ Messenger by Felix Helleckes (MIT).",
     "publish": null,
     "asar": true,
     "asarUnpack": [
@@ -108,11 +120,11 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "ICQ Messenger",
-      "artifactName": "ICQ-Messenger-Setup-${version}.${ext}"
+      "shortcutName": "ISeekU",
+      "artifactName": "ISeekU-Setup-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "ICQ-Messenger-${version}-Portable.${ext}"
+      "artifactName": "ISeekU-${version}-Portable.${ext}"
     },
     "mac": {
       "target": [
@@ -138,7 +150,7 @@
       ]
     },
     "dmg": {
-      "title": "ICQ Messenger",
+      "title": "ISeekU",
       "background": null,
       "window": {
         "width": 540,
@@ -162,7 +174,7 @@
       ],
       "icon": "public/icon.png",
       "category": "Network;InstantMessaging",
-      "description": "Retro ICQ-style multi-messenger for WhatsApp and Telegram",
+      "description": "An authentic ICQ 5/6 client, speaking XMPP",
       "extraResources": [
         {
           "from": "puppeteer_cache/chrome",

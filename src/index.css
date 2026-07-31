@@ -1,5 +1,6 @@
 /* ── ICQ 5 Skin – Global Styles ────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Tahoma&display=swap');
+/* Tahoma ships with Windows and is not on Google Fonts — the import that
+   used to be here fetched nothing, on every start, from a third party. */
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 

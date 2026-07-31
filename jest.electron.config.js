@@ -7,7 +7,7 @@
  */
 module.exports = {
   testEnvironment: 'node',
-  roots: ['<rootDir>/electron'],
+  roots: ['<rootDir>/electron', '<rootDir>/tools'],
   testMatch: ['**/*.test.js'],
   // Helpers are plain CJS — skip Babel entirely so no CRA/preset setup is needed.
   transform: {},

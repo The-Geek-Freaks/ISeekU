@@ -114,6 +114,21 @@ try { telegramBridge = require('./telegram-bridge'); } catch (e) {
   telegramBridge = { init(){}, requestCode(){}, signIn(){}, startQRLogin(){}, submit2FA(){}, getStatus:()=>'error', getDialogs:()=>[], getMessages:()=>[], sendMessage(){} };
 }
 
+// ── The ICQ account (XMPP) ────────────────────────────────────
+// The native transport, so unlike the other two it is always loaded: it holds
+// one socket and no browser, and costs nothing until someone signs in.
+let icqBridge;
+try {
+  const { IcqBridge } = require('./icq/bridge');
+  icqBridge = new IcqBridge().init(appDataDir);
+} catch (e) {
+  console.error('[ICQ bridge load]', e.message);
+  icqBridge = {
+    on(){}, getStatus:()=>({ status:'error' }), connect(){ throw new Error('ICQ bridge unavailable'); },
+    disconnect(){}, listChats:()=>[], listContacts:()=>[], getMessages:()=>[], sendMessage(){},
+  };
+}
+
 // ── Dev URL helper ────────────────────────────────────────────
 function devUrl(params = '') {
   return (isDev && !isE2E)
@@ -504,6 +519,56 @@ ipcMain.handle('tg:get-me',         async ()                    => telegramBridg
 ipcMain.handle('tg:get-avatar',     async (e, id)               => telegramBridge.getContactAvatar(id));
 ipcMain.handle('tg:logout',         async ()                    => telegramBridge.logout());
 ipcMain.handle('tg:set-credentials',async (e, apiId, apiHash)   => telegramBridge.setCredentials(apiId, apiHash));
+
+// ── IPC: the ICQ account ──────────────────────────────────────
+// Push every bridge event to every open window, the way the skin/read
+// broadcasts above already do. Chat windows and the Contact List both need
+// presence and messages, and neither knows about the other.
+function icqBroadcast(channel, payload) {
+  BrowserWindow.getAllWindows().forEach((w) => {
+    if (!w.isDestroyed()) w.webContents.send(channel, payload);
+  });
+}
+
+for (const [event, channel] of Object.entries({
+  ready: 'icq:ready',
+  status: 'icq:status-changed',
+  message: 'icq:message',
+  presence: 'icq:presence',
+  typing: 'icq:typing',
+  ack: 'icq:ack',
+  contacts: 'icq:contacts',
+  alert: 'icq:alert',
+  'authorization-request': 'icq:authorization-request',
+  'authorization-answer': 'icq:authorization-answer',
+  insecure: 'icq:insecure',
+  error: 'icq:error',
+})) {
+  icqBridge.on(event, (payload) => icqBroadcast(channel, payload));
+}
+
+// The password arrives here from the renderer, is handed straight to the
+// connection, and is never stored on this side, never logged, and never sent
+// back. See ADR 0002.
+ipcMain.handle('icq:connect', async (e, options) => icqBridge.connect(options));
+ipcMain.handle('icq:disconnect',     async ()                  => icqBridge.disconnect());
+ipcMain.handle('icq:register',       async (e, options)        => icqBridge.register(options));
+ipcMain.handle('icq:registration-fields', async (e, options)   => icqBridge.registrationFields(options));
+ipcMain.handle('icq:status',         async ()                  => icqBridge.getStatus());
+ipcMain.handle('icq:get-contacts',   async ()                  => icqBridge.listContacts());
+ipcMain.handle('icq:get-chats',      async ()                  => icqBridge.listChats());
+ipcMain.handle('icq:get-messages',   async (e, jid, opts)      => icqBridge.getMessages(jid, opts));
+ipcMain.handle('icq:send-message',   async (e, jid, body)      => icqBridge.sendMessage(jid, body));
+ipcMain.handle('icq:send-typing',    async (e, jid, isTyping)  => icqBridge.sendTyping(jid, isTyping));
+ipcMain.handle('icq:mark-read',      async (e, jid)            => icqBridge.markRead(jid));
+ipcMain.handle('icq:set-status',     async (e, status, text)   => icqBridge.setStatus(status, text));
+ipcMain.handle('icq:set-away-message', async (e, text)         => icqBridge.setAwayMessage(text));
+ipcMain.handle('icq:add-contact',    async (e, uin, nick, grp) => icqBridge.addContact(uin, nick, grp));
+ipcMain.handle('icq:remove-contact', async (e, jid)            => icqBridge.removeContact(jid));
+ipcMain.handle('icq:answer-authorization', async (e, jid, ok, reason) => icqBridge.answerAuthorization(jid, ok, reason));
+ipcMain.handle('icq:set-alert',      async (e, jid, on)        => icqBridge.setAlert(jid, on));
+ipcMain.handle('icq:search-history', async (e, query, opts)    => icqBridge.searchHistory(query, opts));
+ipcMain.handle('icq:server-features', async ()                 => [...(icqBridge.serverFeatures || [])]);
 
 // ── IPC: Window controls ──────────────────────────────────────
 ipcMain.on('window:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());

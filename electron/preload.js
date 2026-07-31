@@ -1,5 +1,18 @@
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
+/**
+ * Listen on a push channel and hand back the unsubscribe.
+ *
+ * Returning the teardown matters more than it looks: a chat window that closes
+ * without removing its listener leaves the handler attached, and the next
+ * window on the same channel then fires every callback twice.
+ */
+function subscribe(channel, cb) {
+  const handler = (_, data) => cb(data);
+  ipcRenderer.on(channel, handler);
+  return () => ipcRenderer.removeListener(channel, handler);
+}
+
 contextBridge.exposeInMainWorld('api', {
   // WhatsApp
   wa: {
@@ -99,6 +112,46 @@ contextBridge.exposeInMainWorld('api', {
     onQR:         (cb)               => ipcRenderer.on('tg:qr',       (_, d) => cb(d)),
     onReady:      (cb)               => ipcRenderer.on('tg:ready',    (_, d) => cb(d)),
     on2FANeeded:  (cb)               => ipcRenderer.on('tg:2fa-needed',(_, d) => cb(d)),
+  },
+  // ICQ — the native account, over XMPP.
+  //
+  // Note what is deliberately absent: there is no getPassword. The password
+  // travels renderer -> main once, at connect, and never comes back. Storing
+  // and decrypting it is the main process's business alone (ADR 0002).
+  icq: {
+    connect:      (options)          => ipcRenderer.invoke('icq:connect', options),
+    disconnect:   ()                 => ipcRenderer.invoke('icq:disconnect'),
+    register:     (options)          => ipcRenderer.invoke('icq:register', options),
+    registrationFields: (options)    => ipcRenderer.invoke('icq:registration-fields', options),
+    getStatus:    ()                 => ipcRenderer.invoke('icq:status'),
+    getContacts:  ()                 => ipcRenderer.invoke('icq:get-contacts'),
+    getChats:     ()                 => ipcRenderer.invoke('icq:get-chats'),
+    getMessages:  (jid, opts)        => ipcRenderer.invoke('icq:get-messages', jid, opts),
+    sendMessage:  (jid, body)        => ipcRenderer.invoke('icq:send-message', jid, body),
+    sendTyping:   (jid, isTyping)    => ipcRenderer.invoke('icq:send-typing', jid, isTyping),
+    markRead:     (jid)              => ipcRenderer.invoke('icq:mark-read', jid),
+    setStatus:    (status, text)     => ipcRenderer.invoke('icq:set-status', status, text),
+    setAwayMessage: (text)           => ipcRenderer.invoke('icq:set-away-message', text),
+    addContact:   (uin, nick, group) => ipcRenderer.invoke('icq:add-contact', uin, nick, group),
+    removeContact:(jid)              => ipcRenderer.invoke('icq:remove-contact', jid),
+    answerAuthorization: (jid, granted, reason) => ipcRenderer.invoke('icq:answer-authorization', jid, granted, reason),
+    setAlert:     (jid, on)          => ipcRenderer.invoke('icq:set-alert', jid, on),
+    searchHistory:(query, opts)      => ipcRenderer.invoke('icq:search-history', query, opts),
+    serverFeatures: ()               => ipcRenderer.invoke('icq:server-features'),
+    // Every listener returns its own unsubscribe, so a chat window that closes
+    // does not leave a handler behind for the next one to double-fire on.
+    onReady:      (cb) => subscribe('icq:ready', cb),
+    onStatusChanged: (cb) => subscribe('icq:status-changed', cb),
+    onMessage:    (cb) => subscribe('icq:message', cb),
+    onPresence:   (cb) => subscribe('icq:presence', cb),
+    onTyping:     (cb) => subscribe('icq:typing', cb),
+    onAck:        (cb) => subscribe('icq:ack', cb),
+    onContacts:   (cb) => subscribe('icq:contacts', cb),
+    onAlert:      (cb) => subscribe('icq:alert', cb),
+    onAuthorizationRequest: (cb) => subscribe('icq:authorization-request', cb),
+    onAuthorizationAnswer:  (cb) => subscribe('icq:authorization-answer', cb),
+    onInsecure:   (cb) => subscribe('icq:insecure', cb),
+    onError:      (cb) => subscribe('icq:error', cb),
   },
   // Chat windows
   openChat: (params) => ipcRenderer.invoke('open-chat', params),

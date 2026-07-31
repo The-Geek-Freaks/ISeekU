@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './LoginPanel.css';
+import IcqLogin from './icq/IcqLogin';
 
 // ── Shared QR renderer (works for both WA and TG) ────────────
 function QRDisplay({ qr }) {
@@ -296,7 +297,20 @@ function TelegramPanel({ tgStatus, tgQR, tg2FA, onTgAuth, onTgQRLogin, onTg2FASu
 }
 
 // ── Main LoginPanel ───────────────────────────────────────────
-export default function LoginPanel({ service, waStatus, tgStatus, waQR, tgQR, tg2FA, onTgAuth, onTgQRLogin, onTg2FASubmit, onTgSetCredentials }) {
+export default function LoginPanel({ service, waStatus, tgStatus, waQR, tgQR, tg2FA, onTgAuth, onTgQRLogin, onTg2FASubmit, onTgSetCredentials, onIcqConnected }) {
+  // ICQ brings its own screen: signing in with a UIN has nothing in common
+  // with scanning a QR code, and it carries the unencrypted-server warning
+  // that ADR 0002 requires.
+  if (service === 'icq') {
+    return (
+      <div className="login-panel">
+        <div className="login-box win98-raised">
+          <IcqLogin onConnected={onIcqConnected} />
+        </div>
+      </div>
+    );
+  }
+
   const isWA = service === 'whatsapp';
 
   return (

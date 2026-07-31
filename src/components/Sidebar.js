@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Sidebar.css';
 import { SKINS, setSkin, getSavedSkinId } from '../skins';
+import StatusIcon from './icq/StatusIcon';
+import IcqContactList from './icq/IcqContactList';
+import StatusMenu from './icq/StatusMenu';
 
 const GAMES = [
   { id: '8ball', name: '8 Ball Pool',  icon: '🎱', url: 'https://bloob.io/de/8ballpool' },
@@ -13,6 +16,7 @@ const DONATE_URL = 'https://paypal.me/sparky512';
 const STATUS_COLOR = {
   ready: '#44DD44', 'needs-auth': '#F5C400', 'no-credentials': '#F5C400',
   disconnected: '#CC3333', qr: '#F5C400',
+  connecting: '#F5C400', reconnecting: '#F5C400', loading: '#F5C400', error: '#CC3333',
 };
 
 function statusLabel(s) {
@@ -54,8 +58,15 @@ function ContactItem({ chat, onSelect, service, avatarsEnabled = true }) {
         if (!avatarsEnabled) return;
         let fetched = null;
         try {
-          if (service === 'whatsapp') fetched = await window.api.wa.getAvatar(chat.id);
-          else fetched = await window.api.tg.getAvatar(chat.id);
+          // Ask the transport the contact actually belongs to. The old
+          // "WhatsApp, else Telegram" form sent ICQ contacts to Telegram,
+          // where the id means nothing.
+          const fetchers = {
+            whatsapp: (id) => window.api.wa.getAvatar(id),
+            telegram: (id) => window.api.tg.getAvatar(id),
+            icq: (id) => window.api.icq?.getAvatar?.(id),
+          };
+          fetched = await fetchers[service]?.(chat.id);
         } catch (e) { fetched = null; }
         if (mounted && fetched) {
           setAvatar(fetched);
@@ -168,7 +179,8 @@ function GroupSection({ groups, onSelect, groupSound, onToggleGroupSound, onMark
 
 export default function Sidebar({
   activeService, setActiveService,
-  waStatus, tgStatus,
+  waStatus, tgStatus, icqStatus,
+  ownStatus = 'offline', ownStatusText = '', onChangeOwnStatus,
   chats, chatsLoading, avatarsEnabled, onSelectChat,
   loginPanel,
   myProfile,
@@ -183,10 +195,15 @@ export default function Sidebar({
   onIncreaseContactScale,
 }) {
   const [search, setSearch] = useState('');
+  // ICQ's All/Online tabs. Persisted because it is a lasting preference,
+  // not a per-session one — the original remembered it too.
+  const [icqShowOffline, setIcqShowOffline] = useState(() => localStorage.getItem('icq-show-offline') !== 'off');
+  useEffect(() => { localStorage.setItem('icq-show-offline', icqShowOffline ? 'on' : 'off'); }, [icqShowOffline]);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const gameBtnRef = useRef(null);
   const gameMenuRef = useRef(null);
   const [showSkinMenu, setShowSkinMenu] = useState(false);
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [skinId, setSkinId] = useState(() => getSavedSkinId());
   const skinBtnRef = useRef(null);
   const skinMenuRef = useRef(null);
@@ -238,10 +255,37 @@ export default function Sidebar({
             : '✿'}
         </div>
         <div className="user-info">
-          <div className="user-name">{myProfile?.name || 'Retrogram'}</div>
-          <div className="user-status" style={{ color: STATUS_COLOR[currentStatus] }}>
-            ● {statusLabel(currentStatus)}
-          </div>
+          <div className="user-name">{myProfile?.name || 'ISeekU'}</div>
+          {activeService === 'icq' && icqStatus === 'ready' ? (
+            // On ICQ the Owner's own line is a control, not a label: this is
+            // the flower button people used to change Status a dozen times a
+            // day. The other transports have no Status to change.
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="icq-own-status"
+                onClick={() => setShowStatusMenu(v => !v)}
+                aria-haspopup="menu"
+                aria-expanded={showStatusMenu}
+                title="Change Status"
+              >
+                <StatusIcon status={ownStatus} title={ownStatus} />
+                <span>{ownStatusText || ownStatus}</span>
+              </button>
+              {showStatusMenu && (
+                <StatusMenu
+                  current={ownStatus}
+                  statusText={ownStatusText}
+                  onChange={onChangeOwnStatus}
+                  onClose={() => setShowStatusMenu(false)}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="user-status" style={{ color: STATUS_COLOR[currentStatus] }}>
+              ● {statusLabel(currentStatus)}
+            </div>
+          )}
         </div>
         {onToggleSound && (
           <button
@@ -304,8 +348,18 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Service tabs */}
+      {/* Service tabs — ICQ first: it is the native account, the other two are
+          extra Transports (see docs/adr/0003). */}
       <div className="service-tabs">
+        <button
+          className={`svc-tab ${activeService === 'icq' ? 'active' : ''}`}
+          onClick={() => setActiveService('icq')}
+          title="ICQ"
+        >
+          <StatusIcon status={icqStatus === 'ready' ? 'online' : 'offline'} size={16} title="ICQ" />
+          <span className="svc-label">ICQ</span>
+          <span className="svc-dot" style={{ background: STATUS_COLOR[icqStatus] }} />
+        </button>
         <button
           className={`svc-tab ${activeService === 'whatsapp' ? 'active' : ''}`}
           onClick={() => setActiveService('whatsapp')}
@@ -340,7 +394,27 @@ export default function Sidebar({
             />
           </div>
 
-          {/* Contact list */}
+          {/* The ICQ account gets ICQ's own Contact List — 16px rows, Groups,
+              Status icons — rather than the avatar rows the other transports
+              use. Everything below is for WhatsApp and Telegram. */}
+          {activeService === 'icq' ? (
+            <div className="contact-list">
+              <div className="icq-tabs">
+                <div className="icq-tab" data-active={icqShowOffline ? 'true' : undefined} onClick={() => setIcqShowOffline(true)}>All</div>
+                <div className="icq-tab" data-active={!icqShowOffline ? 'true' : undefined} onClick={() => setIcqShowOffline(false)}>Online</div>
+              </div>
+              {chatsLoading && <div className="no-contacts loading">Loading Contact List…</div>}
+              {!chatsLoading && (
+                <IcqContactList
+                  contacts={chats}
+                  search={search}
+                  showOffline={icqShowOffline}
+                  onSelect={onSelectChat}
+                />
+              )}
+            </div>
+          ) : (
+          /* Contact list */
           <div className="contact-list">
             {activeService === 'whatsapp' && currentStatus === 'loading' && (
               <div className="service-reconnecting" role="status" aria-live="polite">
@@ -376,6 +450,7 @@ export default function Sidebar({
               <ContactItem key={chat.id} chat={chat} onSelect={onSelectChat} service={activeService} avatarsEnabled={avatarsEnabled} />
             ))}
           </div>
+          )}
         </>
       )}
 

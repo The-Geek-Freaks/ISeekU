@@ -1,0 +1,102 @@
+/* The Status popup. Roughly the 140x200 the original occupied, but allowed to
+   grow with the Status Text history rather than scrolling it. */
+
+.icq-status-menu {
+  position: absolute;
+  bottom: var(--icq-bottombar-h, 22px);
+  left: 0;
+  z-index: 40;
+  min-width: 170px;
+  padding: 3px;
+  background: var(--icq-face, #ece9d8);
+  /* A raised Win32 panel, lit from the top left. */
+  border: 1px solid;
+  border-color: var(--icq-highlight, #fff) var(--icq-dark-shadow, #716f64) var(--icq-dark-shadow, #716f64) var(--icq-highlight, #fff);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, .35);
+  font-family: var(--icq-font, Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+}
+
+.icq-status-text-row {
+  padding: 2px;
+}
+
+.icq-status-text-row .icq-input {
+  width: 100%;
+}
+
+/* Previously used Status Texts. People reused the same handful for years. */
+.icq-status-history {
+  display: flex;
+  flex-direction: column;
+  margin: 2px;
+  padding: 2px 0;
+  border-top: 1px solid var(--icq-shadow, #aca899);
+  border-bottom: 1px solid var(--icq-shadow, #aca899);
+}
+
+.icq-status-history-item {
+  padding: 1px 4px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--icq-text-dim, #808080);
+  font-style: italic;
+  text-align: left;
+  cursor: default;
+  /* One line each: a long status must not push the Status list off screen. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icq-status-history-item:hover {
+  background: var(--icq-selected-bg, #316ac5);
+  color: #fff;
+}
+
+.icq-status-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.icq-status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--icq-text, #000);
+  text-align: left;
+  cursor: default;
+}
+
+/* Instant, like every other native menu. No transition. */
+.icq-status-item:hover {
+  background: var(--icq-selected-bg, #316ac5);
+  color: #fff;
+}
+
+.icq-status-item[data-current='true'] {
+  font-weight: bold;
+}
+
+.icq-status-label {
+  flex: 1;
+}
+
+/* Marks the Statuses that start answering people on the Owner's behalf. */
+.icq-status-auto {
+  font-size: 9px;
+  padding: 0 3px;
+  color: var(--icq-text-dim, #808080);
+  border: 1px solid var(--icq-shadow, #aca899);
+}
+
+.icq-status-item:hover .icq-status-auto {
+  color: #fff;
+  border-color: #fff;
+}

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" data-skin="icq5">
+<head>
+<meta charset="utf-8">
+<title>ISeekU — ICQ 5.1 skin preview</title>
+<!--
+  Renders the real src/skins/icq5.css against static markup, so the skin can be
+  looked at without starting Electron, signing in, or waiting for a bridge.
+
+  Open it directly in a browser:  tools/skin-preview.html
+-->
+<link rel="stylesheet" href="../src/skins/icq5.css">
+<style>
+  body { margin: 0; padding: 16px; background: #5a7ea8; font-family: Tahoma, sans-serif; }
+  .stage { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+  .window { box-shadow: 2px 2px 6px rgba(0,0,0,.4); display: flex; flex-direction: column; }
+  .window > .icq-titlebar { flex: 0 0 auto; }
+  .contact-window { width: 178px; height: 305px; }
+  .chat-window { width: 400px; height: 320px; }
+  .caption { color: #fff; font-size: 11px; margin: 0 0 4px; text-shadow: 1px 1px 1px rgba(0,0,0,.5); }
+  .title-text { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .title-btn {
+    width: 16px; height: 14px; margin-left: 1px; font-size: 9px; line-height: 12px;
+    text-align: center; color: #000; background: #ECE9D8;
+    border: 1px solid; border-color: #fff #716f64 #716f64 #fff;
+  }
+  .body { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 1px solid #716f64; border-top: none; }
+  .owner {
+    display: flex; align-items: center; gap: 4px; padding: 3px 4px;
+    background: #ECE9D8; border-bottom: 1px solid #ACA899; font-size: 11px;
+  }
+  .owner b { font-size: 11px; }
+  .uin { color: #808080; }
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .sw { text-align: center; color: #fff; font-size: 10px; }
+  .sw i { display: block; width: 44px; height: 28px; border: 1px solid #000; margin-bottom: 2px; }
+  .icons { display: flex; gap: 14px; background: #fff; padding: 8px; border: 1px solid #716f64; }
+  .icons figure { margin: 0; text-align: center; font-size: 10px; width: 54px; }
+  .icons figcaption { margin-top: 2px; color: #000; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div>
+    <p class="caption">Contact List — 178&times;305, 16px rows, Tahoma 8pt</p>
+    <div class="window contact-window">
+      <div class="icq-titlebar">
+        <span class="title-text">ISeekU</span>
+        <span class="title-btn">_</span><span class="title-btn">□</span><span class="title-btn">×</span>
+      </div>
+      <div class="body">
+        <div class="owner">
+          <svg class="icq-status-icon" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">
+            <g><circle cx="8" cy="3" r="2.4" fill="#4DAB27"/><circle cx="11.5" cy="4.5" r="2.4" fill="#FC021E"/>
+            <circle cx="13" cy="8" r="2.4" fill="#4DAB27"/><circle cx="11.5" cy="11.5" r="2.4" fill="#4DAB27"/>
+            <circle cx="8" cy="13" r="2.4" fill="#4DAB27"/><circle cx="4.5" cy="11.5" r="2.4" fill="#4DAB27"/>
+            <circle cx="3" cy="8" r="2.4" fill="#4DAB27"/><circle cx="4.5" cy="4.5" r="2.4" fill="#4DAB27"/>
+            <circle cx="8" cy="8" r="2.6" fill="#FFD700"/></g>
+          </svg>
+          <b>Alex</b><span class="uin">265019842</span>
+        </div>
+
+        <div class="icq-tabs">
+          <div class="icq-tab" data-active="true">All</div>
+          <div class="icq-tab">Online</div>
+        </div>
+
+        <div class="icq-contactlist" style="flex:1">
+          <div class="icq-group"><span class="icq-group-arrow">▼</span>Friends<span class="icq-group-count">2/3</span></div>
+
+          <div class="icq-contact" data-status="online">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#4DAB27"/></svg>
+            <span class="icq-contact-name">Bernd</span>
+          </div>
+
+          <div class="icq-contact" data-status="chat" data-unread="true">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#94C729"/></svg>
+            <span class="icq-contact-name">Kathrin</span>
+            <span class="icq-contact-status">wants to chat</span>
+          </div>
+
+          <div class="icq-contact" data-status="away" data-selected="true">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#FFD700"/></svg>
+            <span class="icq-contact-name">Marco</span>
+            <span class="icq-contact-status">Just Vibing</span>
+          </div>
+
+          <div class="icq-group"><span class="icq-group-arrow">▼</span>Work<span class="icq-group-count">0/1</span></div>
+          <div class="icq-contact" data-status="dnd">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#CC0000"/><rect x="4.5" y="7" width="7" height="2" fill="#fff"/></svg>
+            <span class="icq-contact-name">Sabine</span>
+          </div>
+
+          <div class="icq-group"><span class="icq-group-arrow">▶</span>Offline<span class="icq-group-count">2</span></div>
+          <div class="icq-contact" data-status="offline">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#606060"/></svg>
+            <span class="icq-contact-name">348192043</span>
+            <span class="icq-contact-status">2h ago</span>
+          </div>
+          <div class="icq-contact" data-status="offline">
+            <svg class="icq-status-icon" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#606060"/></svg>
+            <span class="icq-contact-name">Tobi</span>
+          </div>
+        </div>
+
+        <div class="icq-insecure-badge">🔓 Unencrypted</div>
+        <div class="icq-bottombar">
+          <button class="icq-btn" style="min-width:0;padding:0 6px">ICQ</button>
+          <button class="icq-btn" style="min-width:0;padding:0 6px">Add</button>
+          <button class="icq-btn" style="min-width:0;padding:0 6px">Find</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <p class="caption">Chat Window — a log, not bubbles</p>
+    <div class="window chat-window">
+      <div class="icq-titlebar"><span class="title-text">Kathrin — Message Session</span>
+        <span class="title-btn">_</span><span class="title-btn">□</span><span class="title-btn">×</span></div>
+      <div class="body">
+        <div class="icq-messages" style="flex:1">
+          <div class="icq-msg"><span class="icq-msg-sender">Kathrin</span> <span class="icq-msg-time">21:04</span><br><span class="icq-msg-body">Uh-oh! Bist du noch wach?</span></div>
+          <div class="icq-msg" data-from-me="true"><span class="icq-msg-sender">Alex</span> <span class="icq-msg-time">21:05</span><br><span class="icq-msg-body">Klar. Baue gerade ISeekU fertig.</span></div>
+          <div class="icq-msg"><span class="icq-msg-sender">Kathrin</span> <span class="icq-msg-time">21:05</span><br><span class="icq-msg-body">Schick mal <a href="#">https://icqr.net</a></span></div>
+          <div class="icq-msg" data-from-me="true"><span class="icq-msg-sender">Alex</span> <span class="icq-msg-time">21:06</span><br><span class="icq-msg-body">Läuft schon dagegen :)</span></div>
+        </div>
+        <div style="border-top:1px solid #ACA899;display:flex;flex-direction:column;height:74px">
+          <textarea class="icq-compose" style="flex:1">Antwort tippen…</textarea>
+          <div class="icq-bottombar" style="justify-content:flex-end">
+            <button class="icq-btn">Send</button>
+            <button class="icq-btn">History</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption" style="margin-top:14px">Status icons — 16&times;16</p>
+    <div class="icons">
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#4DAB27"/></svg><figcaption>Online</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#94C729"/></svg><figcaption>FFC</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#FFD700"/></svg><figcaption>Away</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#FF8C00"/></svg><figcaption>N/A</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#FF4500"/><rect x="4.5" y="7" width="7" height="2" fill="#fff"/></svg><figcaption>Occupied</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#CC0000"/><rect x="4.5" y="7" width="7" height="2" fill="#fff"/></svg><figcaption>DND</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5" fill="none" stroke="#808080" stroke-width="1.5" stroke-dasharray="2 1.5"/></svg><figcaption>Invisible</figcaption></figure>
+      <figure><svg width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges"><circle cx="8" cy="8" r="5.5" fill="#606060"/></svg><figcaption>Offline</figcaption></figure>
+    </div>
+  </div>
+</div>
+
+<div class="swatches">
+  <div class="sw"><i style="background:#4DAB27"></i>#4DAB27<br>green</div>
+  <div class="sw"><i style="background:#94C729"></i>#94C729<br>light</div>
+  <div class="sw"><i style="background:#2861D4"></i>#2861D4<br>blue</div>
+  <div class="sw"><i style="background:#FC021E"></i>#FC021E<br>red petal</div>
+  <div class="sw"><i style="background:#BC9400"></i>#BC9400<br>gold</div>
+  <div class="sw"><i style="background:#ECE9D8"></i>#ECE9D8<br>XP face</div>
+  <div class="sw"><i style="background:#316AC5"></i>#316AC5<br>selection</div>
+</div>
+
+</body>
+</html>

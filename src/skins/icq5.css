@@ -1,0 +1,538 @@
+/* ============================================================================
+   ICQ 5.1 — the real one.
+
+   Every value here is either measured from a primary source or marked as an
+   estimate. Sources, so a later reader can check rather than trust:
+
+   - Brand greens and accents: the navbut_colors[] array in archived icq.com
+     JavaScript (Wayback Machine, 2006-04-15). These are ICQ's own values.
+   - Window and row metrics: measured from ICQ 5 reference screenshots in the
+     Prairie Frontier skinning guide and the GUIdebook splash archive.
+   - Chrome colours: Windows XP Luna system defaults, which is what ICQ 5 drew
+     against on the machine most people ran it on.
+
+   Two rules run through the whole file:
+
+   1. NO ROUNDED CORNERS. ICQ 5 was a Win32 application. Every border is a
+      1px hard edge, every raised surface is a two-tone bevel. A border-radius
+      anywhere in here is a bug.
+
+   2. NO TRANSITIONS on anything the Owner sees constantly — hover, selection,
+      Status changes. A native application repaints instantly, and animating a
+      contact-list hover that someone triggers a hundred times an hour makes
+      the whole client feel slower than the 2005 original did. Motion is
+      reserved for the one thing ICQ actually animated: the blinking Event
+      icon.
+   ========================================================================= */
+
+:root[data-skin='icq5'] {
+  /* --- brand ------------------------------------------------------------ */
+  --icq-green: #4dab27; /* verified: navbut_colors[0] */
+  --icq-green-alt: #4aaa21; /* verified: navbut_colors[30] */
+  --icq-green-light: #94c729; /* verified: navbut_colors[4] */
+  --icq-blue: #2861d4; /* verified: navbut_colors[1] */
+  --icq-link: #0d65bf; /* verified: archived icq.com stylesheet */
+  --icq-red: #fc021e; /* verified: navbut_colors[8] — the flower's one red petal */
+  --icq-gold: #bc9400; /* verified: navbut_colors[2] */
+  --icq-orange: #fb7702; /* verified: navbut_colors[3] */
+  --icq-flower-yellow: #ffd700; /* estimated from logo analysis */
+
+  /* --- surfaces --------------------------------------------------------- */
+  --icq-list-bg: #ffffff;
+  --icq-list-alt-bg: #e8f4e8; /* estimated: the pale green tint of ICQ 5 rows */
+  --icq-group-bg: #c8dec8; /* estimated: group header band */
+  --icq-panel-bg: #ece9d8; /* verified: Windows XP Luna dialog face */
+  --icq-message-bg: #ffffff;
+  --icq-selected-bg: #316ac5; /* verified: Windows XP selection */
+  --icq-selected-fg: #ffffff;
+  --icq-hover-bg: #d8e8f8;
+
+  /* --- Windows XP chrome ------------------------------------------------ */
+  --icq-face: #ece9d8;
+  --icq-highlight: #ffffff; /* the light edge of a bevel */
+  --icq-light: #f5f4ea;
+  --icq-shadow: #aca899; /* the dark edge of a bevel */
+  --icq-dark-shadow: #716f64;
+  --icq-frame: #0054e3;
+  --icq-title-active-a: #0a246a; /* verified: Luna active title gradient */
+  --icq-title-active-b: #a6caf0;
+  --icq-title-inactive-a: #7a96df;
+  --icq-title-inactive-b: #c3d5f0;
+
+  /* --- text ------------------------------------------------------------- */
+  --icq-text: #000000;
+  --icq-text-dim: #808080; /* status lines under a contact name */
+  --icq-text-disabled: #aca899;
+  --icq-title-text: #ffffff;
+
+  /* --- Status colours (the 16x16 dots) ---------------------------------- */
+  --icq-status-online: #4dab27;
+  --icq-status-chat: #94c729;
+  --icq-status-away: #ffd700;
+  --icq-status-na: #ff8c00;
+  --icq-status-occupied: #ff4500;
+  --icq-status-dnd: #cc0000;
+  --icq-status-invisible: #808080;
+  --icq-status-offline: #606060;
+
+  /* --- metrics ---------------------------------------------------------- */
+  --icq-row-h: 16px; /* one contact, one status icon, Tahoma 8pt */
+  --icq-row-h-avatar: 34px; /* ICQ 6, with a 32px avatar */
+  --icq-group-h: 16px;
+  --icq-titlebar-h: 18px;
+  --icq-bottombar-h: 22px;
+  --icq-tab-h: 22px;
+  --icq-icon: 16px;
+  --icq-avatar-list: 32px;
+  --icq-avatar-chat: 48px;
+  --icq-avatar-profile: 64px;
+  --icq-group-indent: 4px;
+  --icq-contact-indent: 20px;
+  --icq-arrow-w: 12px;
+  --icq-smiley: 19px;
+  --icq-scrollbar: 16px;
+
+  /* --- type ------------------------------------------------------------- */
+  /* Tahoma ships with Windows and is the font ICQ 5 actually drew with. It is
+     deliberately not loaded from the network: the original never did, and a
+     web font request would both fail and leak a page view on every start. */
+  --icq-font: Tahoma, 'MS Sans Serif', Geneva, Verdana, sans-serif;
+  --icq-font-size: 11px; /* Tahoma 8pt at 96dpi */
+  --icq-font-size-msg: 13px; /* Tahoma 10pt — the message body */
+  --icq-line-height: 13px;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] body {
+  background: var(--icq-panel-bg);
+  color: var(--icq-text);
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  /* ICQ 5 predates subpixel smoothing on small UI text; at 8pt Windows drew
+     Tahoma as a bitmap. Turning off smoothing is what makes it read as 2005
+     rather than as a modern app using an old font. */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* The upstream theme animates every colour on every element. That is the
+   opposite of a native application, and it is the single biggest thing making
+   a skin feel not-quite-right. Off, wholesale, for this skin. */
+:root[data-skin='icq5'] * {
+  transition: none !important;
+  border-radius: 0 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Win32 bevels
+
+   A raised surface is lit from the top left: white on the top and left edges,
+   grey on the bottom and right. A sunken one is the same in reverse. Two tones
+   on each side is what gives the real chisel; one tone reads as flat.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-raised {
+  border: 1px solid;
+  border-color: var(--icq-highlight) var(--icq-dark-shadow) var(--icq-dark-shadow) var(--icq-highlight);
+  box-shadow: inset 1px 1px 0 var(--icq-light), inset -1px -1px 0 var(--icq-shadow);
+  background: var(--icq-face);
+}
+
+:root[data-skin='icq5'] .icq-sunken {
+  border: 1px solid;
+  border-color: var(--icq-shadow) var(--icq-highlight) var(--icq-highlight) var(--icq-shadow);
+  box-shadow: inset 1px 1px 0 var(--icq-dark-shadow), inset -1px -1px 0 var(--icq-light);
+  background: var(--icq-list-bg);
+}
+
+/* A single hairline groove, as used between toolbar sections. */
+:root[data-skin='icq5'] .icq-groove {
+  border: 1px solid;
+  border-color: var(--icq-shadow) var(--icq-highlight) var(--icq-highlight) var(--icq-shadow);
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-btn {
+  min-width: 64px;
+  height: 21px;
+  padding: 0 10px;
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  color: var(--icq-text);
+  background: var(--icq-face);
+  border: 1px solid;
+  border-color: var(--icq-highlight) var(--icq-dark-shadow) var(--icq-dark-shadow) var(--icq-highlight);
+  box-shadow: inset 1px 1px 0 var(--icq-light), inset -1px -1px 0 var(--icq-shadow);
+  cursor: default;
+}
+
+/* Pressed: the bevel inverts and the label shifts a pixel down and right, the
+   way a real Win32 button did. No scale, no transition — this is a 2005
+   control, and the instant flip is the feedback. */
+:root[data-skin='icq5'] .icq-btn:active {
+  border-color: var(--icq-dark-shadow) var(--icq-highlight) var(--icq-highlight) var(--icq-dark-shadow);
+  box-shadow: inset 1px 1px 0 var(--icq-shadow), inset -1px -1px 0 var(--icq-light);
+  padding: 1px 9px 0 11px;
+}
+
+:root[data-skin='icq5'] .icq-btn:focus-visible {
+  outline: 1px dotted var(--icq-text);
+  outline-offset: -4px;
+}
+
+:root[data-skin='icq5'] .icq-btn:disabled {
+  color: var(--icq-text-disabled);
+  text-shadow: 1px 1px 0 var(--icq-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   Text fields
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-input {
+  height: 19px;
+  padding: 2px 3px;
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  color: var(--icq-text);
+  background: #ffffff;
+  border: 1px solid;
+  border-color: var(--icq-shadow) var(--icq-highlight) var(--icq-highlight) var(--icq-shadow);
+  box-shadow: inset 1px 1px 0 var(--icq-dark-shadow);
+}
+
+:root[data-skin='icq5'] .icq-input:focus {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Title bar
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-titlebar {
+  height: var(--icq-titlebar-h);
+  display: flex;
+  align-items: center;
+  padding: 0 2px 0 3px;
+  background: linear-gradient(180deg, var(--icq-title-active-a) 0%, #3f8cf3 8%, #0054e3 40%, #0054e3 88%, var(--icq-title-active-b) 100%);
+  color: var(--icq-title-text);
+  font-size: var(--icq-font-size);
+  font-weight: bold;
+  /* The XP title bar had a real drop shadow behind its text. */
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.6);
+  user-select: none;
+}
+
+:root[data-skin='icq5'] .icq-titlebar[data-inactive='true'] {
+  background: linear-gradient(180deg, var(--icq-title-inactive-a) 0%, var(--icq-title-inactive-b) 100%);
+}
+
+/* ---------------------------------------------------------------------------
+   Contact List
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-contactlist {
+  background: var(--icq-list-bg);
+  font-size: var(--icq-font-size);
+  line-height: var(--icq-line-height);
+  overflow-y: auto;
+  /* A flex item will not shrink below its content without this, so a long
+     Contact List pushes the bottom bar — and the unencrypted-connection
+     notice, which ADR 0002 requires to stay visible — off the window. */
+  min-height: 0;
+}
+
+:root[data-skin='icq5'] .icq-group {
+  height: var(--icq-group-h);
+  display: flex;
+  align-items: center;
+  padding-left: var(--icq-group-indent);
+  background: var(--icq-group-bg);
+  font-weight: bold;
+  cursor: default;
+}
+
+:root[data-skin='icq5'] .icq-group-arrow {
+  width: var(--icq-arrow-w);
+  flex: 0 0 var(--icq-arrow-w);
+  text-align: center;
+  font-size: 9px;
+}
+
+:root[data-skin='icq5'] .icq-group-count {
+  margin-left: auto;
+  padding-right: 4px;
+  font-weight: normal;
+  color: var(--icq-text-dim);
+}
+
+:root[data-skin='icq5'] .icq-contact {
+  height: var(--icq-row-h);
+  display: flex;
+  align-items: center;
+  padding-left: var(--icq-contact-indent);
+  gap: 3px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* Hover and selection are instant. See the note at the top of the file. */
+:root[data-skin='icq5'] .icq-contact:hover {
+  background: var(--icq-hover-bg);
+}
+
+:root[data-skin='icq5'] .icq-contact[data-selected='true'] {
+  background: var(--icq-selected-bg);
+  color: var(--icq-selected-fg);
+}
+
+/* Offline contacts are greyed but still legible — ICQ never hid them by
+   default, it just pushed them down and dimmed them. */
+:root[data-skin='icq5'] .icq-contact[data-status='offline'] {
+  color: var(--icq-text-dim);
+}
+
+:root[data-skin='icq5'] .icq-contact-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The Status Text, in grey italic after the name — exactly where ICQ put it. */
+:root[data-skin='icq5'] .icq-contact-status {
+  font-style: italic;
+  color: var(--icq-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+:root[data-skin='icq5'] .icq-contact[data-selected='true'] .icq-contact-status {
+  color: #d8e8f8;
+}
+
+/* The count of waiting Events, pushed to the right edge of the row. */
+:root[data-skin='icq5'] .icq-contact-unread {
+  margin-left: auto;
+  padding: 0 3px;
+  background: var(--icq-red);
+  color: #fff;
+  font-weight: bold;
+  font-size: 9px;
+  line-height: 11px;
+}
+
+:root[data-skin='icq5'] .icq-empty {
+  padding: 8px 6px;
+  color: var(--icq-text-dim);
+  font-style: italic;
+}
+
+/* The Owner's own Status line, which is a button rather than a label — this is
+   the flower people clicked a dozen times a day. */
+:root[data-skin='icq5'] .icq-own-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--icq-font-size);
+  color: var(--icq-text-dim);
+  text-align: left;
+  cursor: default;
+}
+
+:root[data-skin='icq5'] .icq-own-status > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-skin='icq5'] .icq-own-status:hover > span {
+  text-decoration: underline;
+}
+
+/* --- the 16x16 status dot --------------------------------------------- */
+
+:root[data-skin='icq5'] .icq-status-icon {
+  width: var(--icq-icon);
+  height: var(--icq-icon);
+  flex: 0 0 var(--icq-icon);
+  display: block;
+}
+
+/* A Contact with unread Events blinks, which is the one thing ICQ really did
+   animate. Stepped rather than eased: it is a two-frame icon swap, not a fade.
+   Respects a reduced-motion preference by holding the visible frame. */
+:root[data-skin='icq5'] .icq-contact[data-unread='true'] .icq-status-icon {
+  animation: icq-blink 1s steps(1, end) infinite;
+}
+
+@keyframes icq-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin='icq5'] .icq-contact[data-unread='true'] .icq-status-icon {
+    animation: none;
+  }
+  /* Still needs to stand out, just without the flashing. */
+  :root[data-skin='icq5'] .icq-contact[data-unread='true'] .icq-contact-name {
+    font-weight: bold;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Bottom bar and filter tabs
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-tabs {
+  height: var(--icq-tab-h);
+  display: flex;
+  align-items: flex-end;
+  background: var(--icq-panel-bg);
+  border-bottom: 1px solid var(--icq-shadow);
+}
+
+:root[data-skin='icq5'] .icq-tab {
+  height: 19px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  background: var(--icq-face);
+  border: 1px solid;
+  border-color: var(--icq-highlight) var(--icq-dark-shadow) transparent var(--icq-highlight);
+  cursor: default;
+}
+
+:root[data-skin='icq5'] .icq-tab[data-active='true'] {
+  height: var(--icq-tab-h);
+  background: var(--icq-list-bg);
+  border-bottom-color: var(--icq-list-bg);
+  font-weight: bold;
+}
+
+:root[data-skin='icq5'] .icq-bottombar {
+  height: var(--icq-bottombar-h);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px;
+  background: var(--icq-panel-bg);
+  border-top: 1px solid var(--icq-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   Chat window
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-messages {
+  background: var(--icq-message-bg);
+  font-size: var(--icq-font-size-msg);
+  padding: 2px 4px;
+  overflow-y: auto;
+}
+
+/* ICQ 5's classic mode was not a bubble chat. It was a log: sender name in
+   bold colour, then the text, one after another. Bubbles are a 2010s idea and
+   they are the fastest way to make this look wrong. */
+:root[data-skin='icq5'] .icq-msg {
+  margin-bottom: 2px;
+  line-height: 15px;
+  word-wrap: break-word;
+}
+
+:root[data-skin='icq5'] .icq-msg-sender {
+  font-weight: bold;
+  color: var(--icq-green);
+}
+
+:root[data-skin='icq5'] .icq-msg[data-from-me='true'] .icq-msg-sender {
+  color: var(--icq-red);
+}
+
+:root[data-skin='icq5'] .icq-msg-time {
+  color: var(--icq-text-dim);
+  font-size: var(--icq-font-size);
+}
+
+:root[data-skin='icq5'] .icq-msg-body {
+  white-space: pre-wrap;
+}
+
+:root[data-skin='icq5'] .icq-msg a {
+  color: var(--icq-link);
+  text-decoration: underline;
+}
+
+:root[data-skin='icq5'] .icq-compose {
+  background: #ffffff;
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size-msg);
+  padding: 2px 4px;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+:root[data-skin='icq5'] .icq-emoticon {
+  width: var(--icq-smiley);
+  height: var(--icq-smiley);
+  vertical-align: text-bottom;
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbars — the chunky XP ones, not thin modern overlays
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] ::-webkit-scrollbar {
+  width: var(--icq-scrollbar);
+  height: var(--icq-scrollbar);
+}
+
+:root[data-skin='icq5'] ::-webkit-scrollbar-track {
+  background: #f1efe2;
+}
+
+:root[data-skin='icq5'] ::-webkit-scrollbar-thumb {
+  background: var(--icq-face);
+  border: 1px solid;
+  border-color: var(--icq-highlight) var(--icq-dark-shadow) var(--icq-dark-shadow) var(--icq-highlight);
+  box-shadow: inset 1px 1px 0 var(--icq-light), inset -1px -1px 0 var(--icq-shadow);
+}
+
+:root[data-skin='icq5'] ::-webkit-scrollbar-button {
+  height: var(--icq-scrollbar);
+  background: var(--icq-face);
+  border: 1px solid;
+  border-color: var(--icq-highlight) var(--icq-dark-shadow) var(--icq-dark-shadow) var(--icq-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   The unencrypted-connection notice.
+
+   ADR 0002 requires that an Account connected in the clear stays visibly
+   marked for the whole session, not warned about once and forgotten. This is
+   that mark. It is deliberately the one thing on screen that does not look
+   like 2005 — it should not blend in.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq5'] .icq-insecure-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  background: #ffe8e8;
+  border: 1px solid var(--icq-red);
+  color: #8b0000;
+  font-size: var(--icq-font-size);
+}

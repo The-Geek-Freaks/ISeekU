@@ -19,8 +19,12 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
     const now = Date.now();
     if (now - lastReadAtRef.current < 600) return;
     lastReadAtRef.current = now;
-    if (service === 'whatsapp') api.wa.markRead?.(chatId).catch(() => {});
-    else api.tg.markRead?.(chatId).catch(() => {});
+    const markers = {
+      whatsapp: () => api.wa.markRead?.(chatId),
+      telegram: () => api.tg.markRead?.(chatId),
+      icq: () => api.icq?.markRead?.(chatId),
+    };
+    Promise.resolve(markers[service]?.()).catch(() => {});
     api.notifyRead?.({ chatId: String(chatId), service, timestamp: Math.floor(now / 1000) });
   }, [chatId, service]);
 
@@ -75,9 +79,14 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
     async function loadMessages() {
       if (!api || !chatId) return;
       try {
-        const msgs = service === 'whatsapp'
-          ? await api.wa.getMessages(chatId, { refresh: true })
-          : await api.tg.getMessages(chatId, { limit: 50 });
+        const loaders = {
+          whatsapp: () => api.wa.getMessages(chatId, { refresh: true }),
+          telegram: () => api.tg.getMessages(chatId, { limit: 50 }),
+          // The ICQ account serves the live conversation and tops it up from
+          // the local History, so a fresh sign-on still opens on what was said.
+          icq: () => api.icq.getMessages(chatId, { limit: 200 }),
+        };
+        const msgs = await loaders[service]?.();
         setMessages(msgs || []);
         markChatReadNow();
       } catch (e) { console.error('[ChatApp load]', e); }
@@ -221,7 +230,42 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
           }
         })
       : null;
-    return () => { removeWa?.(); removeWaMedia?.(); removeTg?.(); removeAck?.(); removeTyping?.(); };
+    // --- the ICQ account ---------------------------------------------------
+    const isIcq = service === 'icq';
+    const removeIcq = isIcq && api.icq?.onMessage
+      ? api.icq.onMessage(({ jid, message }) => {
+          // Our own sends are inserted optimistically; taking the echo too
+          // would show every Message twice.
+          if (String(jid) !== String(chatId) || message?.fromMe) return;
+          setMessages(prev => mergeById(prev, [message]));
+          markChatReadNow();
+        })
+      : null;
+    // XEP-0184: the delivery confirmation that turns the tick solid.
+    const removeIcqAck = isIcq && api.icq?.onAck
+      ? api.icq.onAck(({ jid, id, ack }) => {
+          if (String(jid) !== String(chatId)) return;
+          setMessages(prev => prev.map(m => m.id === id ? { ...m, ack } : m));
+        })
+      : null;
+    // XEP-0085: "X is typing…", which ICQ had long before it was standard.
+    const removeIcqTyping = isIcq && api.icq?.onTyping
+      ? api.icq.onTyping(({ jid, typing }) => {
+          if (String(jid) !== String(chatId)) return;
+          setIsTyping(typing);
+          if (typing) {
+            clearTimeout(typingTimer.current);
+            // A client that stops typing without saying so must not leave the
+            // notice up for ever.
+            typingTimer.current = setTimeout(() => setIsTyping(false), 8000);
+          }
+        })
+      : null;
+
+    return () => {
+      removeWa?.(); removeWaMedia?.(); removeTg?.(); removeAck?.(); removeTyping?.();
+      removeIcq?.(); removeIcqAck?.(); removeIcqTyping?.();
+    };
   }, [chatId, markChatReadNow, mergeById, service]);
 
   // Returns true when the message really went out. WhatsApp sends are never
@@ -231,7 +275,12 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
     if (!text.trim() || !api) return false;
     try {
       let sent;
-      if (service === 'whatsapp') {
+      if (service === 'icq') {
+        // The bridge echoes the Message back in its canonical shape, already
+        // written to History, so it can go straight into the log.
+        const message = await api.icq.sendMessage(chatId, text);
+        if (message) setMessages(prev => [...prev, message]);
+      } else if (service === 'whatsapp') {
         await api.wa.sendMessage(chatId, text, replyToMsgId);
       } else {
         sent = await api.tg.sendMessage(chatId, text, replyToMsgId);

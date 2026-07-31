@@ -9,10 +9,14 @@ const api = window.api;
 export default function App() {
   const [waStatus, setWaStatus] = useState('disconnected');
   const [tgStatus, setTgStatus] = useState('disconnected');
+  const [icqStatus, setIcqStatus] = useState('disconnected');
+  const [ownStatus, setOwnStatus] = useState('offline');
+  const [ownStatusText, setOwnStatusText] = useState('');
   const [waQR, setWaQR]         = useState(null);
   const [tgQR, setTgQR]         = useState(null);
   const [tg2FA, setTg2FA]       = useState(null);
-  const [activeService, setActiveService] = useState('whatsapp');
+  // ICQ is the native account, so it is what the client opens on.
+  const [activeService, setActiveService] = useState('icq');
   const [chats, setChats]       = useState([]);
   const [chatsLoading, setChatsLoading] = useState(false);
   const [myProfile, setMyProfile] = useState({ name: null, avatar: null });
@@ -27,6 +31,7 @@ export default function App() {
   // Per-service chat cache — so switching services is instant (no reload)
   const waCacheRef = React.useRef(null);   // null = not loaded yet
   const tgCacheRef = React.useRef(null);
+  const icqCacheRef = React.useRef(null);
   // WhatsApp first-load retry: right after a fresh login getChats() can return an
   // empty list while WA is still syncing. We never cache that empty result and
   // bump waReloadTick to retry a few times instead of showing "No chats found".
@@ -35,25 +40,33 @@ export default function App() {
   const waChatsRetryRef = React.useRef(null);
   const waProfileRef = React.useRef(null);
   const tgProfileRef = React.useRef(null);
+  const icqProfileRef = React.useRef(null);
   const activeServiceRef = React.useRef(activeService);
   useEffect(() => { activeServiceRef.current = activeService; }, [activeService]);
 
+  // Caches and profiles, looked up by service rather than chosen with a
+  // ternary. The old `service === 'whatsapp' ? wa : tg` form silently treated
+  // every service that was not WhatsApp as Telegram, which stopped being true
+  // the moment ICQ arrived — an unknown service would have written into the
+  // Telegram cache instead of failing.
+  const cacheRefs = { whatsapp: waCacheRef, telegram: tgCacheRef, icq: icqCacheRef };
+
   // Helper: write into the right cache and update visible list if active
   const setCacheAndChats = (service, list) => {
+    const ref = cacheRefs[service];
+    if (!ref) return;
     const sorted = list.slice().sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    if (service === 'whatsapp') waCacheRef.current = sorted;
-    else tgCacheRef.current = sorted;
+    ref.current = sorted;
     if (activeServiceRef.current === service) setChats(sorted);
   };
 
   // Update a single chat entry in the cache (live updates from messages)
   const patchChat = (service, id, patch) => {
-    const cache = service === 'whatsapp' ? waCacheRef.current : tgCacheRef.current;
-    if (!cache) return;
-    const updated = cache.map(c => c.id === id ? { ...c, ...patch } : c)
+    const ref = cacheRefs[service];
+    if (!ref || !ref.current) return;
+    const updated = ref.current.map(c => c.id === id ? { ...c, ...patch } : c)
       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    if (service === 'whatsapp') waCacheRef.current = updated;
-    else tgCacheRef.current = updated;
+    ref.current = updated;
     if (activeServiceRef.current === service) setChats(updated);
   };
   const [soundEnabled, setSoundEnabled] = useState(() => {
@@ -94,12 +107,14 @@ export default function App() {
     // Gruppen-Sound-Check — immer den service-eigenen Cache nutzen, nicht chatsRef
     // (chatsRef enthält nur den aktiv angezeigten Service)
     if (chatId) {
-      const cache = service === 'telegram' ? tgCacheRef.current : waCacheRef.current;
-      const chat = cache?.find(c => c.id === String(chatId));
+      const chat = cacheRefs[service]?.current?.find(c => c.id === String(chatId));
       // If the chat is archived, always stay silent
       if (chat?.archived) return;
       if (chat?.isGroup) {
-        const groupSoundOn = service === 'telegram' ? tgGroupSoundRef.current : waGroupSoundRef.current;
+        // ICQ contacts are people, never groups, so it has no group-sound
+        // setting of its own and falls through to sounding normally.
+        const groupSoundOn = service === 'telegram' ? tgGroupSoundRef.current
+          : service === 'whatsapp' ? waGroupSoundRef.current : true;
         if (!groupSoundOn) return;
       }
     }
@@ -213,7 +228,47 @@ export default function App() {
       if (!msg?.chatId) return;
       patchChat(service, String(msg.chatId), { unreadCount: 0 });
     });
-    return () => { removeWaMsg?.(); removeWaAvatar?.(); removeTgAvatar?.(); removeTgMsg?.(); removeSent?.(); removeRead?.(); if (reloadTimer) clearTimeout(reloadTimer); };
+    // --- the ICQ account ---------------------------------------------------
+    // Ask once at start: the connection lives in the main process and may
+    // already be up from a previous window.
+    api.icq?.getStatus?.().then((s) => { if (s?.status) setIcqStatus(s.status); }).catch(() => {});
+
+    const removeIcqStatus = api.icq?.onStatusChanged?.((s) => {
+      setIcqStatus(s?.status || 'disconnected');
+      if (s?.ownStatus) setOwnStatus(s.ownStatus);
+      if (typeof s?.ownStatusText === 'string') setOwnStatusText(s.ownStatusText);
+    });
+    const removeIcqReady = api.icq?.onReady?.(() => setIcqStatus('ready'));
+    const removeIcqContacts = api.icq?.onContacts?.(() => {
+      // The Contact List changed shape (someone added, removed, renamed).
+      // Drop the cache so the next render asks for it again.
+      icqCacheRef.current = null;
+      api.icq.getChats().then((chats) => setCacheAndChats('icq', chats)).catch(() => {});
+    });
+    const removeIcqMessage = api.icq?.onMessage?.(({ jid, message }) => {
+      if (!jid || !message) return;
+      const now = message.timestamp || Math.floor(Date.now() / 1000);
+      // A Message delivered from the server's offline store already happened;
+      // announcing it as new would sound the alert for week-old conversation.
+      if (!message.offline) playMessageSound(jid, 'icq');
+      const seen = icqCacheRef.current?.find(c => c.id === jid)?.unreadCount || 0;
+      patchChat('icq', jid, {
+        lastMessage: message.body,
+        timestamp: now,
+        unreadCount: message.fromMe ? seen : seen + 1,
+      });
+    });
+    const removeIcqPresence = api.icq?.onPresence?.(({ jid, status, statusText }) => {
+      patchChat('icq', jid, { status, statusText });
+    });
+
+    return () => {
+      removeWaMsg?.(); removeWaAvatar?.(); removeTgAvatar?.(); removeTgMsg?.();
+      removeSent?.(); removeRead?.();
+      removeIcqStatus?.(); removeIcqReady?.(); removeIcqContacts?.();
+      removeIcqMessage?.(); removeIcqPresence?.();
+      if (reloadTimer) clearTimeout(reloadTimer);
+    };
   }, []);
 
   // Load chats when service / status changes — use cache if available
@@ -264,6 +319,24 @@ export default function App() {
         tgCacheRef.current = (dialogs || []).slice();
         setChats(tgCacheRef.current);
         setChatsLoading(false);
+      } else if (activeService === 'icq' && icqStatus === 'ready') {
+        if (icqProfileRef.current) setMyProfile(icqProfileRef.current);
+        if (icqCacheRef.current) { setChats(icqCacheRef.current); return; }
+        setChatsLoading(true);
+        const [contacts, status] = await Promise.all([
+          api.icq.getChats().catch(() => []),
+          api.icq.getStatus().catch(() => null),
+        ]);
+        if (status?.account?.uin) {
+          icqProfileRef.current = { name: status.account.uin, avatar: null };
+          setMyProfile(icqProfileRef.current);
+        }
+        // The Contact List is ordered by the Contact List component itself —
+        // by Group, then Status, then name. Sorting by timestamp here would
+        // fight it and put whoever spoke last on top, which ICQ never did.
+        icqCacheRef.current = (contacts || []).slice();
+        setChats(icqCacheRef.current);
+        setChatsLoading(false);
       } else {
         setChats([]);
         setChatsLoading(false);
@@ -275,7 +348,7 @@ export default function App() {
     // to be pulled for the top groups right after, which hammered the single
     // WhatsApp page and made the first load crawl. ChatApp loads participants
     // on demand when a group chat is actually opened.
-  }, [activeService, waStatus, tgStatus, waReloadTick]);
+  }, [activeService, waStatus, tgStatus, icqStatus, waReloadTick]);
 
   // Open a separate chat window (ICQ 5 style) + clear unread badge
   const openChat = (chat) => {
@@ -327,7 +400,7 @@ export default function App() {
     setMyProfile({ name: null, avatar: null });
   };
 
-  const currentStatus = activeService === 'whatsapp' ? waStatus : tgStatus;
+  const currentStatus = { whatsapp: waStatus, telegram: tgStatus, icq: icqStatus }[activeService];
   const needsLogin = ['disconnected', 'loading', 'qr', 'needs-auth'].includes(currentStatus);
 
   // Login panel is rendered inside the sidebar when not connected
@@ -336,6 +409,7 @@ export default function App() {
       service={activeService}
       waStatus={waStatus}
       tgStatus={tgStatus}
+      onIcqConnected={() => setIcqStatus('ready')}
       waQR={waQR}
       tgQR={tgQR}
       tg2FA={tg2FA}
@@ -366,6 +440,14 @@ export default function App() {
           setActiveService={setActiveService}
           waStatus={waStatus}
           tgStatus={tgStatus}
+          icqStatus={icqStatus}
+          ownStatus={ownStatus}
+          ownStatusText={ownStatusText}
+          onChangeOwnStatus={(status, text) => {
+            // Show it at once; the bridge confirms through onStatusChanged.
+            setOwnStatus(status); setOwnStatusText(text || '');
+            api?.icq?.setStatus?.(status, text).catch(() => {});
+          }}
           chats={chats}
           chatsLoading={chatsLoading}
           avatarsEnabled={!chatsLoading}

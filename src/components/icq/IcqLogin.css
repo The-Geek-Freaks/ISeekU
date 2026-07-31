@@ -1,0 +1,114 @@
+/* The ICQ sign-in screen. Sized to the 320x240 the original login wizard used,
+   but allowed to grow — the unencrypted-server warning is long on purpose and
+   must never be scrolled out of sight. */
+
+.icq-login {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  min-width: 300px;
+  background: var(--icq-panel-bg, #ece9d8);
+  color: var(--icq-text, #000);
+  font-family: var(--icq-font, Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+}
+
+.icq-login-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--icq-shadow, #aca899);
+}
+
+.icq-login-header h1 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.icq-login-header p {
+  margin: 1px 0 0;
+  color: var(--icq-text-dim, #808080);
+}
+
+.icq-login-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icq-login-row > label {
+  flex: 0 0 78px;
+  text-align: right;
+}
+
+.icq-login-row .icq-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.icq-login-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-left: 84px;
+}
+
+/* Sized to sit next to 11px text without the browser's default 13px box. */
+.icq-login-check input[type='checkbox'] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   The unencrypted-server warning.
+
+   Deliberately the one element on screen that does not look like 2005. It is
+   competing with a nostalgic interface for attention and it has to win.
+   ------------------------------------------------------------------------ */
+
+.icq-login-warning {
+  padding: 7px 8px;
+  background: #fff4e5;
+  border: 1px solid #d97706;
+  border-left-width: 4px;
+  color: #7c2d12;
+}
+
+.icq-login-warning strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.icq-login-warning p {
+  margin: 0 0 6px;
+  line-height: 1.45;
+}
+
+.icq-login-warning .icq-login-check {
+  padding-left: 0;
+  font-weight: bold;
+}
+
+.icq-login-error {
+  padding: 5px 7px;
+  background: #ffe8e8;
+  border: 1px solid #cc0000;
+  color: #8b0000;
+}
+
+.icq-login-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.icq-login-actions .icq-btn:disabled {
+  color: var(--icq-text-disabled, #aca899);
+  /* The engraved look Win32 used for a disabled label. */
+  text-shadow: 1px 1px 0 #fff;
+}

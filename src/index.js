@@ -2,10 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import './themes.css';
-// The ICQ 5.1 skin is more than a palette — 16px rows, Win32 bevels and the
+// The classic skin is more than a palette — 16px rows, Win32 bevels and the
 // absence of rounded corners cannot be expressed as CSS variables, so it ships
 // as a stylesheet keyed off the data-skin attribute applySkin() sets.
-import './skins/icq5.css';
+import './skins/icq99.css';
 import App from './App';
 import ChatApp from './ChatApp';
 import { applySavedSkin, applySkin } from './skins';

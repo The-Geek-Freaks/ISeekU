@@ -14,44 +14,44 @@ const STORAGE_KEY = 'icq-skin';
 
 export const SKINS = [
   {
-    // ICQ 5.1, as it actually looked: Windows XP chrome, Tahoma 8pt, hard
-    // edges, the verified ICQ green. The bulk of this skin lives in
-    // skins/icq5.css, which keys off the data-skin attribute applySkin() sets
-    // — colours alone cannot produce 16px rows, Win32 bevels or the absence of
-    // rounded corners. The variables below exist so the components that have
-    // not been reskinned yet still land in the right palette instead of
-    // staying dark.
-    id: 'icq5',
-    name: 'ICQ 5.1 (Authentic)',
-    swatch: '#4DAB27',
+    // ICQ 2001b on Windows 98 — the classic era. Colours below are the
+    // Windows 98 GetSysColor() defaults; the flower greens are measured from
+    // the 2001b splash screen. The bulk of the skin lives in
+    // skins/icq99.css, because 16px rows, two-ring Win32 bevels and the
+    // absence of rounded corners cannot be expressed as colour variables.
+    // See docs/ORIGINAL-REFERENCE.md and docs/CLASSIC-SKIN-SPEC.md.
+    id: 'icq99',
+    name: 'ICQ Classic (2001)',
+    swatch: '#00FF00',
     vars: {
-      '--icq-bg': '#ECE9D8',
+      '--icq-bg': '#C0C0C0',
       '--icq-bg-mid': '#FFFFFF',
-      '--icq-bg-light': '#E8F4E8',
-      '--icq-teal': '#4DAB27',
-      '--icq-teal-dark': '#3A8F1A',
-      '--icq-teal-light': '#94C729',
-      '--icq-header-grad1': '#0054E3',
-      '--icq-header-grad2': '#A6CAF0',
-      '--icq-header-bg': 'linear-gradient(180deg, #0A246A 0%, #3F8CF3 8%, #0054E3 40%, #0054E3 88%, #A6CAF0 100%)',
-      '--icq-yellow': '#FFD700',
+      '--icq-bg-light': '#DFDFDF',
+      '--icq-teal': '#00FF00',
+      '--icq-teal-dark': '#008400',
+      '--icq-teal-light': '#84FF00',
+      '--icq-header-grad1': '#000080',
+      '--icq-header-grad2': '#1084D0',
+      '--icq-header-bg': 'linear-gradient(90deg, #000080 0%, #1084D0 100%)',
+      '--icq-yellow': '#FFFF00',
       '--icq-white': '#FFFFFF',
       '--icq-text': '#000000',
       '--icq-text-dim': '#808080',
-      '--icq-border': '#ACA899',
+      '--icq-border': '#808080',
       '--icq-border-light': '#FFFFFF',
-      '--icq-online': '#4DAB27',
+      '--icq-online': '#00FF00',
       '--icq-away': '#FFD700',
-      '--icq-offline': '#606060',
-      '--icq-dnd': '#CC0000',
-      '--icq-btn-bg': '#ECE9D8',
-      '--icq-btn-hover': '#E3E1D2',
-      '--icq-btn-active': '#D4D0C8',
+      '--icq-offline': '#808080',
+      '--icq-dnd': '#FF0000',
+      '--icq-btn-bg': '#C0C0C0',
+      '--icq-btn-hover': '#D4D0C8',
+      '--icq-btn-active': '#A0A0A0',
       '--icq-input-bg': '#FFFFFF',
-      // A log, not bubbles — ICQ 5 had no bubbles at all.
+      // A log, not bubbles — the classic client had no bubbles at all.
       '--icq-bubble-me': '#FFFFFF',
-      '--icq-bubble-me-border': '#ACA899',
-      '--icq-avatar-bg': '#D4D0C8',
+      '--icq-bubble-me-border': '#808080',
+      '--icq-avatar-bg': '#C0C0C0',
+      // Authentic: the classic contact list showed no avatars.
       '--icq-list-avatar-display': 'none',
     },
   },
@@ -162,7 +162,7 @@ export const SKINS = [
   },
 ];
 
-const DEFAULT_SKIN_ID = 'icq5';
+const DEFAULT_SKIN_ID = 'icq99';
 
 export function getSkin(id) {
   return SKINS.find(s => s.id === id) || SKINS[0];

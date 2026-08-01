@@ -1,0 +1,585 @@
+/* ============================================================================
+   ICQ 2001b, on Windows 98.
+
+   The reference is ICQ 2001b (v5.18 build 3659, 28 November 2001) — the peak
+   of the classic era, before the 2002a redesign moved the search bar and the
+   2003 gradients arrived.
+
+   Where the values come from, so a later reader can check rather than trust:
+
+   - The chrome colours are Windows 98 GetSysColor() values at the default
+     theme. These are authoritative. Measuring them off an archived GIF gives
+     #C6BDBD and #C6C6C6 instead, which are dithering artefacts of #C0C0C0 —
+     the system value is the real one and the screenshot is the lossy copy.
+
+   - The flower colours ARE measured, from the ICQ 2001b splash screen:
+     #00FF00 petals, #FF0000 for the odd one, #FFFF00 centre. Pure primaries.
+     See docs/ORIGINAL-REFERENCE.md for the pixel counts.
+
+   - MS Sans Serif at 8pt (11px at 96dpi) is what Windows 98 drew UI text with.
+     Not Tahoma — that is the Windows 2000/XP default and reads a generation
+     too late.
+
+   Three rules run through the file:
+
+   1. NO ROUNDED CORNERS. Every edge is a hard 1px line and every raised
+      surface is a two-tone bevel. A border-radius in here is a bug.
+
+   2. NO TRANSITIONS on anything seen constantly. A Win32 application repaints
+      instantly; animating a contact-list hover makes the client feel slower
+      than the 2001 original actually was. The one thing ICQ animated was the
+      blinking event icon, and that is a two-frame swap, not a fade.
+
+   3. The window frame is the operating system's. Nothing in here draws a
+      title bar, a close button, or a drag region.
+   ========================================================================= */
+
+:root[data-skin='icq99'] {
+  /* --- Windows 98 system colours (GetSysColor defaults) ----------------- */
+  --win-face: #c0c0c0;         /* COLOR_3DFACE — chrome, buttons, group bands */
+  --win-highlight: #ffffff;    /* COLOR_3DHIGHLIGHT — outer light bevel edge  */
+  --win-light: #dfdfdf;        /* COLOR_3DLIGHT — inner light bevel edge      */
+  --win-shadow: #808080;       /* COLOR_3DSHADOW — inner dark bevel edge      */
+  --win-dark-shadow: #000000;  /* COLOR_3DDKSHADOW — outer dark bevel edge    */
+  --win-window: #ffffff;       /* COLOR_WINDOW — list and edit backgrounds    */
+  --win-window-text: #000000;  /* COLOR_WINDOWTEXT                            */
+  --win-select: #000080;       /* COLOR_HIGHLIGHT — navy, NOT the XP blue     */
+  --win-select-text: #ffffff;  /* COLOR_HIGHLIGHTTEXT                         */
+  --win-grey-text: #808080;    /* COLOR_GRAYTEXT — disabled and secondary     */
+  --win-caption: #000080;      /* active caption start                        */
+  --win-caption-end: #1084d0;  /* active caption end                          */
+
+  /* --- The flower — MEASURED from the 2001b splash ---------------------- */
+  --icq-flower-green: #00ff00;
+  --icq-flower-red: #ff0000;
+  --icq-flower-yellow: #ffff00;
+  --icq-flower-green-dark: #008400;
+  --icq-flower-yellow-dark: #848400;
+
+  /* --- Status colours --------------------------------------------------- */
+  --icq-status-online: #00ff00;
+  --icq-status-chat: #7fff00;
+  --icq-status-away: #ffd700;
+  --icq-status-na: #ff8c00;
+  --icq-status-occupied: #ff4500;
+  --icq-status-dnd: #ff0000;
+  --icq-status-invisible: #808080;
+  --icq-status-offline: #808080;
+
+  /* --- Type ------------------------------------------------------------- */
+  /* MS Sans Serif ships with Windows and is what ICQ drew with. It is
+     deliberately not fetched from anywhere: the original never did, and a
+     web font would both fail and leak a page view on every start. */
+  --icq-font: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Geneva, sans-serif;
+  --icq-font-size: 11px;   /* 8pt at 96dpi */
+  --icq-font-size-msg: 13px;
+  --icq-line-height: 13px;
+
+  /* --- Metrics ---------------------------------------------------------- */
+  --icq-row-h: 16px;
+  --icq-group-h: 16px;
+  --icq-icon: 16px;
+  --icq-scrollbar: 16px;      /* Win98 SM_CXVSCROLL */
+  --icq-contact-indent: 20px;
+  --icq-group-indent: 4px;
+  --icq-arrow-w: 12px;
+  --icq-bottombar-h: 22px;
+  --icq-tab-h: 20px;
+  --icq-smiley: 19px;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] body {
+  background: var(--win-face);
+  color: var(--win-window-text);
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  /* Windows 98 drew 8pt UI text as a bitmap with no smoothing. Leaving
+     antialiasing on is the single clearest tell that this is a modern
+     application wearing an old font. */
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+/* The inherited theme animates every colour on every element. That is the
+   opposite of a native application and the biggest thing making a retro skin
+   feel wrong. Off, wholesale. */
+:root[data-skin='icq99'] * {
+  transition: none !important;
+  border-radius: 0 !important;
+}
+
+/* ---------------------------------------------------------------------------
+   Win32 bevels
+
+   A raised surface is lit from the top left across two rings: white then light
+   grey on the top and left, shadow grey then black on the bottom and right.
+   One ring reads as flat; two is what gives the real chisel.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-raised,
+:root[data-skin='icq99'] .win98-raised {
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: inset 1px 1px 0 var(--win-light), inset -1px -1px 0 var(--win-shadow);
+  background: var(--win-face);
+}
+
+:root[data-skin='icq99'] .icq-sunken,
+:root[data-skin='icq99'] .win98-sunken {
+  border: 1px solid;
+  border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+  box-shadow: inset 1px 1px 0 var(--win-dark-shadow), inset -1px -1px 0 var(--win-light);
+  background: var(--win-window);
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-btn,
+:root[data-skin='icq99'] .win98-btn {
+  min-width: 64px;
+  height: 21px;
+  padding: 0 10px;
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  color: var(--win-window-text);
+  background: var(--win-face);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: inset 1px 1px 0 var(--win-light), inset -1px -1px 0 var(--win-shadow);
+  cursor: default;
+}
+
+/* Pressed: the bevel inverts and the label moves a pixel down and right, the
+   way a real Win32 button did. No scale, no transition — the instant flip is
+   the feedback. */
+:root[data-skin='icq99'] .icq-btn:active,
+:root[data-skin='icq99'] .win98-btn:active {
+  border-color: var(--win-dark-shadow) var(--win-highlight) var(--win-highlight) var(--win-dark-shadow);
+  box-shadow: inset 1px 1px 0 var(--win-shadow), inset -1px -1px 0 var(--win-light);
+  padding: 1px 9px 0 11px;
+  background: var(--win-face);
+}
+
+:root[data-skin='icq99'] .icq-btn:focus-visible {
+  outline: 1px dotted var(--win-window-text);
+  outline-offset: -4px;
+}
+
+:root[data-skin='icq99'] .icq-btn:disabled {
+  color: var(--win-grey-text);
+  /* Win32 engraved the label of a disabled control. */
+  text-shadow: 1px 1px 0 var(--win-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   Text fields
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-input,
+:root[data-skin='icq99'] input.win98-input {
+  height: 19px;
+  padding: 2px 3px;
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size);
+  color: var(--win-window-text);
+  background: var(--win-window);
+  border: 1px solid;
+  border-color: var(--win-shadow) var(--win-highlight) var(--win-highlight) var(--win-shadow);
+  box-shadow: inset 1px 1px 0 var(--win-dark-shadow);
+}
+
+:root[data-skin='icq99'] .icq-input:focus {
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Contact List
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-contactlist {
+  background: var(--win-window);
+  font-size: var(--icq-font-size);
+  line-height: var(--icq-line-height);
+  overflow-y: auto;
+  /* Without this a long list pushes the bottom bar — and the unencrypted
+     connection notice ADR 0002 requires to stay visible — off the window. */
+  min-height: 0;
+}
+
+:root[data-skin='icq99'] .icq-group {
+  height: var(--icq-group-h);
+  display: flex;
+  align-items: center;
+  padding-left: var(--icq-group-indent);
+  background: var(--win-face);
+  border-top: 1px solid var(--win-highlight);
+  border-bottom: 1px solid var(--win-shadow);
+  font-weight: bold;
+  cursor: default;
+}
+
+:root[data-skin='icq99'] .icq-group-arrow {
+  width: var(--icq-arrow-w);
+  flex: 0 0 var(--icq-arrow-w);
+  text-align: center;
+  font-size: 9px;
+}
+
+:root[data-skin='icq99'] .icq-group-count {
+  margin-left: auto;
+  padding-right: 4px;
+  font-weight: normal;
+  color: var(--win-grey-text);
+}
+
+:root[data-skin='icq99'] .icq-contact {
+  height: var(--icq-row-h);
+  display: flex;
+  align-items: center;
+  padding-left: var(--icq-contact-indent);
+  gap: 3px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* Hover and selection are instant. See rule 2 at the top of the file. */
+:root[data-skin='icq99'] .icq-contact:hover {
+  background: #d8d8d8;
+}
+
+/* Navy, not the XP blue. This is the single most era-defining colour in the
+   whole interface — #316AC5 here would date the client by four years. */
+:root[data-skin='icq99'] .icq-contact[data-selected='true'] {
+  background: var(--win-select);
+  color: var(--win-select-text);
+}
+
+:root[data-skin='icq99'] .icq-contact[data-status='offline'] {
+  color: var(--win-grey-text);
+}
+
+:root[data-skin='icq99'] .icq-contact-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The Status Text, grey italic behind the name — exactly where ICQ put it. */
+:root[data-skin='icq99'] .icq-contact-status {
+  font-style: italic;
+  color: var(--win-grey-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+:root[data-skin='icq99'] .icq-contact[data-selected='true'] .icq-contact-status {
+  color: #c0c0ff;
+}
+
+:root[data-skin='icq99'] .icq-contact-unread {
+  margin-left: auto;
+  padding: 0 3px;
+  background: var(--icq-flower-red);
+  color: #fff;
+  font-weight: bold;
+  font-size: 9px;
+  line-height: 11px;
+}
+
+:root[data-skin='icq99'] .icq-empty {
+  padding: 8px 6px;
+  color: var(--win-grey-text);
+  font-style: italic;
+}
+
+/* --- the 16x16 status flower ------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-status-icon {
+  width: var(--icq-icon);
+  height: var(--icq-icon);
+  flex: 0 0 var(--icq-icon);
+  display: block;
+}
+
+/* A contact with waiting events blinks. This is the one thing ICQ genuinely
+   animated, and it was an icon swap — stepped, not eased. */
+:root[data-skin='icq99'] .icq-contact[data-unread='true'] .icq-status-icon {
+  animation: icq99-blink 1s steps(1, end) infinite;
+}
+
+@keyframes icq99-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin='icq99'] .icq-contact[data-unread='true'] .icq-status-icon {
+    animation: none;
+  }
+  /* Still has to stand out, just without the flashing. */
+  :root[data-skin='icq99'] .icq-contact[data-unread='true'] .icq-contact-name {
+    font-weight: bold;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Filter tabs and the bottom bar
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-tabs {
+  height: var(--icq-tab-h);
+  display: flex;
+  align-items: flex-end;
+  background: var(--win-face);
+  border-bottom: 1px solid var(--win-shadow);
+}
+
+:root[data-skin='icq99'] .icq-tab {
+  height: 18px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  background: var(--win-face);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) transparent var(--win-highlight);
+  cursor: default;
+}
+
+:root[data-skin='icq99'] .icq-tab[data-active='true'] {
+  height: var(--icq-tab-h);
+  background: var(--win-window);
+  border-bottom-color: var(--win-window);
+  font-weight: bold;
+}
+
+:root[data-skin='icq99'] .icq-bottombar {
+  height: var(--icq-bottombar-h);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 2px;
+  background: var(--win-face);
+  border-top: 1px solid var(--win-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   The Owner's own row, at the top of the client area.
+
+   The inherited theme paints this as a coloured bar, which read as a title bar
+   in its own right. Under a native OS caption that gives the window two title
+   bars stacked on top of each other — the fastest way to look like a web page
+   pretending to be an application. It is a plain panel here.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .user-header {
+  background: var(--win-face) !important;
+  color: var(--win-window-text);
+  border-bottom: 1px solid var(--win-shadow);
+  box-shadow: inset 0 -1px 0 var(--win-highlight);
+  height: auto;
+  padding: 2px 3px;
+}
+
+:root[data-skin='icq99'] .user-name {
+  color: var(--win-window-text);
+  font-weight: bold;
+  font-size: var(--icq-font-size);
+  text-shadow: none;
+}
+
+:root[data-skin='icq99'] .user-status {
+  font-size: var(--icq-font-size);
+}
+
+/* Service tabs: raised Win32 tabs, the active one merged into the list below. */
+:root[data-skin='icq99'] .service-tabs {
+  background: var(--win-face);
+  border-bottom: 1px solid var(--win-shadow);
+}
+
+:root[data-skin='icq99'] .svc-tab {
+  background: var(--win-face);
+  color: var(--win-window-text);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) transparent var(--win-highlight);
+  font-size: var(--icq-font-size);
+}
+
+:root[data-skin='icq99'] .svc-tab.active {
+  background: var(--win-window);
+  border-bottom-color: var(--win-window);
+  font-weight: bold;
+}
+
+:root[data-skin='icq99'] .search-bar {
+  background: var(--win-face);
+  padding: 2px 3px;
+}
+
+/* The Owner's own status line, which is a control rather than a label. */
+:root[data-skin='icq99'] .icq-own-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--icq-font-size);
+  color: var(--win-grey-text);
+  text-align: left;
+  cursor: default;
+}
+
+:root[data-skin='icq99'] .icq-own-status > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:root[data-skin='icq99'] .icq-own-status:hover > span {
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------------------
+   Message window
+
+   ICQ's classic mode was not a bubble chat. It was a log: sender name in bold
+   colour, then the text. Bubbles are a 2010s idea and the fastest way to make
+   this look wrong.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-messages {
+  background: var(--win-window);
+  font-size: var(--icq-font-size-msg);
+  padding: 2px 4px;
+  overflow-y: auto;
+}
+
+:root[data-skin='icq99'] .icq-msg {
+  margin-bottom: 2px;
+  line-height: 15px;
+  word-wrap: break-word;
+}
+
+:root[data-skin='icq99'] .icq-msg-sender {
+  font-weight: bold;
+  color: #008000;
+}
+
+:root[data-skin='icq99'] .icq-msg[data-from-me='true'] .icq-msg-sender {
+  color: #800000;
+}
+
+:root[data-skin='icq99'] .icq-msg-time {
+  color: var(--win-grey-text);
+  font-size: var(--icq-font-size);
+}
+
+:root[data-skin='icq99'] .icq-msg-body {
+  white-space: pre-wrap;
+}
+
+:root[data-skin='icq99'] .icq-msg a {
+  color: #0000ee;
+  text-decoration: underline;
+}
+
+:root[data-skin='icq99'] .icq-compose {
+  background: var(--win-window);
+  font-family: var(--icq-font);
+  font-size: var(--icq-font-size-msg);
+  padding: 2px 4px;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+:root[data-skin='icq99'] .icq-emoticon {
+  width: var(--icq-smiley);
+  height: var(--icq-smiley);
+  vertical-align: text-bottom;
+}
+
+/* ---------------------------------------------------------------------------
+   Status menu
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-status-menu {
+  background: var(--win-face);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .35);
+}
+
+:root[data-skin='icq99'] .icq-status-item:hover,
+:root[data-skin='icq99'] .icq-status-history-item:hover {
+  background: var(--win-select);
+  color: var(--win-select-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbars — the chunky Win98 ones
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] ::-webkit-scrollbar {
+  width: var(--icq-scrollbar);
+  height: var(--icq-scrollbar);
+}
+
+:root[data-skin='icq99'] ::-webkit-scrollbar-track {
+  /* The classic 50% checkerboard, drawn as a 2px gradient rather than a
+     bitmap so it stays crisp at any zoom. */
+  background-color: var(--win-face);
+  background-image:
+    linear-gradient(45deg, var(--win-highlight) 25%, transparent 25%, transparent 75%, var(--win-highlight) 75%),
+    linear-gradient(45deg, var(--win-highlight) 25%, transparent 25%, transparent 75%, var(--win-highlight) 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 1px 1px;
+}
+
+:root[data-skin='icq99'] ::-webkit-scrollbar-thumb {
+  background: var(--win-face);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: inset 1px 1px 0 var(--win-light), inset -1px -1px 0 var(--win-shadow);
+}
+
+:root[data-skin='icq99'] ::-webkit-scrollbar-button {
+  height: var(--icq-scrollbar);
+  width: var(--icq-scrollbar);
+  background: var(--win-face);
+  border: 1px solid;
+  border-color: var(--win-highlight) var(--win-dark-shadow) var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: inset 1px 1px 0 var(--win-light), inset -1px -1px 0 var(--win-shadow);
+}
+
+:root[data-skin='icq99'] ::-webkit-scrollbar-corner {
+  background: var(--win-face);
+}
+
+/* ---------------------------------------------------------------------------
+   The unencrypted-connection notice.
+
+   ADR 0002 requires an account connected in the clear to stay visibly marked
+   for the whole session. This is that mark, and it is deliberately the one
+   thing on screen that does not look like 1999 — it should not blend in.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-insecure-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  background: #ffe8e8;
+  border: 1px solid var(--icq-flower-red);
+  color: #800000;
+  font-size: var(--icq-font-size);
+}

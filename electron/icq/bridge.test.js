@@ -12,6 +12,7 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const { IcqBridge, ACK } = require('./bridge');
+const capsModel = require('../lib/icq-caps');
 
 const DOMAIN = '132.145.202.182';
 const PEER = `12345@${DOMAIN}`;
@@ -245,6 +246,331 @@ describe('Alert when a Contact comes online', () => {
     bridge.setAlert(PEER, false);
     bridge.onPresence(presence({ from: `${PEER}/desktop` }));
     expect(alerts).toHaveLength(0);
+  });
+});
+
+// ── Entity Capabilities ────────────────────────────────────────────────────
+
+const NS_CAPS = 'http://jabber.org/protocol/caps';
+const NS_DISCO = 'http://jabber.org/protocol/disco#info';
+
+/** xml() mock that supports append(), matching the xmpp library's element API. */
+function makeXml(name, attrs, ...children) {
+  const el = { name, attrs, children: [...children] };
+  el.append = (child) => { el.children.push(child); };
+  return el;
+}
+
+/**
+ * A minimal presence stanza duck-type: carries a <c/> element if `ver` is
+ * given, otherwise looks like a plain available presence.
+ */
+function capPresence(attrs, ver = null) {
+  return {
+    attrs,
+    getChild(name, ns) {
+      if (name === 'c' && ns === NS_CAPS && ver) {
+        return {
+          attrs: {
+            xmlns: NS_CAPS,
+            node: capsModel.OWN_NODE,
+            hash: 'sha-1',
+            ver,
+          },
+        };
+      }
+      if (name === 'icq') return null;
+      return null;
+    },
+    getChildText: () => null,
+  };
+}
+
+describe('Entity Capabilities — outgoing presence', () => {
+  let bridge;
+  let sent;
+
+  beforeEach(() => {
+    capsModel.clearCache();
+    bridge = makeBridge(null);
+    sent = [];
+    bridge.connection = {
+      send: jest.fn((s) => { sent.push(s); return Promise.resolve(); }),
+      entity: { iqCaller: { get: jest.fn() } },
+    };
+    bridge.xml = makeXml;
+  });
+
+  afterEach(() => capsModel.clearCache());
+
+  it('adds a <c/> element to every outgoing presence', async () => {
+    await bridge.setStatus('online', '');
+
+    const presence = sent[0];
+    const cElem = presence.children.find((c) => c.name === 'c');
+    expect(cElem).toBeDefined();
+    expect(cElem.attrs.xmlns).toBe(NS_CAPS);
+    expect(cElem.attrs.hash).toBe('sha-1');
+    expect(cElem.attrs.ver).toBe(capsModel.OWN_VER);
+    expect(typeof cElem.attrs.node).toBe('string');
+  });
+
+  it('carries the same ver whether the Owner is Away or Online', async () => {
+    await bridge.setStatus('online', '');
+    await bridge.setStatus('away', 'Bin kurz weg');
+
+    const vers = sent.map((s) => {
+      const c = s.children.find((ch) => ch.name === 'c');
+      return c ? c.attrs.ver : null;
+    });
+    expect(vers[0]).toBe(vers[1]);
+    expect(vers[0]).toBe(capsModel.OWN_VER);
+  });
+});
+
+describe('Entity Capabilities — inbound caps, cache hit', () => {
+  let bridge;
+
+  beforeEach(() => {
+    capsModel.clearCache();
+    bridge = makeBridge(null);
+    bridge.on('presence', () => {});  // silence unhandled-event warnings
+    bridge.on('peer-caps', () => {});
+  });
+
+  afterEach(() => capsModel.clearCache());
+
+  it('marks a Contact as ISeekU when their ver is already in the verified cache', () => {
+    // Populate the cache as if a previous disco query already confirmed this ver.
+    const features = [capsModel.PEER.MARKER, capsModel.PEER.XFER, capsModel.PEER.CALLS];
+    const ver = capsModel.computeVer([capsModel.OWN_IDENTITY], features);
+    capsModel.putCache(ver, { identities: [capsModel.OWN_IDENTITY], features });
+
+    bridge.contacts.set(PEER, {
+      jid: PEER, uin: '12345', name: 'Bernd', group: 'Friends',
+      status: 'offline', statusText: '', authorization: 'granted', notInList: false,
+    });
+
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, ver));
+
+    const contact = bridge.contacts.get(PEER);
+    expect(contact.peer).toBeDefined();
+    expect(contact.peer.isISeekU).toBe(true);
+    expect(contact.peer.calls).toBe(true);
+    expect(contact.peer.directFileTransfer).toBe(true);
+  });
+
+  it('does not mark a Contact as ISeekU when their caps verify to a non-ISeekU client', () => {
+    // The Exodus 0.9.1 fixture from XEP-0115 — a well-known non-ISeekU client.
+    const exodusIdentity = { category: 'client', type: 'pc', lang: '', name: 'Exodus 0.9.1' };
+    const exodusFeatures = [
+      'http://jabber.org/protocol/caps',
+      'http://jabber.org/protocol/disco#info',
+      'http://jabber.org/protocol/disco#items',
+      'http://jabber.org/protocol/muc',
+    ];
+    const exodusVer = capsModel.computeVer([exodusIdentity], exodusFeatures);
+    capsModel.putCache(exodusVer, { identities: [exodusIdentity], features: exodusFeatures });
+
+    bridge.contacts.set(PEER, {
+      jid: PEER, uin: '12345', name: 'Bernd', group: 'Friends',
+      status: 'offline', statusText: '', authorization: 'granted', notInList: false,
+    });
+
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, exodusVer));
+
+    const contact = bridge.contacts.get(PEER);
+    // peer is set but isISeekU is false — it is a Contact, just not running ISeekU.
+    expect(!contact.peer || !contact.peer.isISeekU).toBe(true);
+  });
+});
+
+describe('Entity Capabilities — inbound caps, disco query path', () => {
+  let bridge;
+  let sent;
+
+  beforeEach(() => {
+    capsModel.clearCache();
+    bridge = makeBridge(null);
+    sent = [];
+    bridge.connection = {
+      send: jest.fn((s) => { sent.push(s); return Promise.resolve(); }),
+      entity: { iqCaller: { get: jest.fn() } },
+    };
+    bridge.xml = makeXml;
+    bridge.on('presence', () => {});
+    bridge.on('peer-caps', () => {});
+  });
+
+  afterEach(() => capsModel.clearCache());
+
+  it('refuses a disco reply whose hash does not match the advertised ver', async () => {
+    // Compute a ver for one specific feature set, but make the disco reply
+    // return a *different* feature set.  putCache will recompute and refuse.
+    const advertisedFeatures = [capsModel.PEER.MARKER];
+    const advertisedVer = capsModel.computeVer([capsModel.OWN_IDENTITY], advertisedFeatures);
+
+    const wrongFeatures = ['http://jabber.org/protocol/muc'];  // hashes to something else
+    bridge.connection.entity.iqCaller.get = jest.fn().mockResolvedValue({
+      getChildren: (name) => {
+        if (name === 'identity') {
+          return [{ attrs: { category: 'client', type: 'pc', name: 'ISeekU', lang: '' } }];
+        }
+        if (name === 'feature') {
+          return wrongFeatures.map((v) => ({ attrs: { var: v } }));
+        }
+        return [];
+      },
+    });
+
+    bridge.contacts.set(PEER, {
+      jid: PEER, uin: '12345', name: 'Bernd', group: 'Friends',
+      status: 'offline', statusText: '', authorization: 'granted', notInList: false,
+    });
+
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, advertisedVer));
+
+    // Let the async disco query complete.
+    await new Promise((resolve) => setImmediate(resolve));
+
+    // The mismatch was caught — nothing should be in the cache.
+    expect(capsModel.getCached(advertisedVer)).toBeNull();
+    const contact = bridge.contacts.get(PEER);
+    // peer must either be absent or explicitly not ISeekU — the attack failed.
+    expect(!contact.peer || !contact.peer.isISeekU).toBe(true);
+  });
+
+  it('marks the Contact as ISeekU when the disco reply verifies correctly', async () => {
+    const features = [capsModel.PEER.MARKER, capsModel.PEER.XFER, capsModel.PEER.CALLS];
+    const ver = capsModel.computeVer([capsModel.OWN_IDENTITY], features);
+
+    // Mock the disco query to return exactly what the ver was computed from.
+    bridge.connection.entity.iqCaller.get = jest.fn().mockResolvedValue({
+      getChildren: (name) => {
+        if (name === 'identity') {
+          return [{ attrs: {
+            category: capsModel.OWN_IDENTITY.category,
+            type: capsModel.OWN_IDENTITY.type,
+            name: capsModel.OWN_IDENTITY.name,
+            lang: capsModel.OWN_IDENTITY.lang,
+          } }];
+        }
+        if (name === 'feature') return features.map((v) => ({ attrs: { var: v } }));
+        return [];
+      },
+    });
+
+    bridge.contacts.set(PEER, {
+      jid: PEER, uin: '12345', name: 'Bernd', group: 'Friends',
+      status: 'offline', statusText: '', authorization: 'granted', notInList: false,
+    });
+
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, ver));
+
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(capsModel.getCached(ver)).not.toBeNull();
+    const contact = bridge.contacts.get(PEER);
+    expect(contact.peer).toBeDefined();
+    expect(contact.peer.isISeekU).toBe(true);
+  });
+
+  it('sends only one disco query even when the same ver appears in multiple presence stanzas', async () => {
+    const features = [capsModel.PEER.MARKER];
+    const ver = capsModel.computeVer([capsModel.OWN_IDENTITY], features);
+
+    // Delay resolution so the second presence arrives while the first is in flight.
+    let resolveQuery;
+    bridge.connection.entity.iqCaller.get = jest.fn(() => new Promise((resolve) => {
+      resolveQuery = resolve;
+    }));
+
+    bridge.contacts.set(PEER, {
+      jid: PEER, uin: '12345', name: 'Bernd', group: 'Friends',
+      status: 'offline', statusText: '', authorization: 'granted', notInList: false,
+    });
+
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, ver));
+    bridge.onPresence(capPresence({ from: `${PEER}/desktop` }, ver));
+
+    expect(bridge.connection.entity.iqCaller.get).toHaveBeenCalledTimes(1);
+
+    // Clean up the dangling promise.
+    resolveQuery({ getChildren: () => [] });
+    await new Promise((resolve) => setImmediate(resolve));
+  });
+});
+
+describe('Entity Capabilities — answering inbound disco#info', () => {
+  let bridge;
+  let sent;
+
+  beforeEach(() => {
+    bridge = makeBridge(null);
+    sent = [];
+    bridge.connection = {
+      send: jest.fn((s) => { sent.push(s); return Promise.resolve(); }),
+    };
+    bridge.xml = makeXml;
+  });
+
+  /** Minimal IQ stanza duck-type for a disco#info GET from a peer. */
+  function discoGet(from, id = 'q1') {
+    return {
+      attrs: { type: 'get', from, id },
+      is: (name) => name === 'iq',
+      getChild: (name, ns) => (name === 'query' && ns === NS_DISCO)
+        ? { attrs: { xmlns: NS_DISCO } }
+        : null,
+    };
+  }
+
+  it('replies to a disco#info GET with our identity and full feature list', () => {
+    bridge.onIq(discoGet(`${PEER}/desktop`));
+
+    expect(bridge.connection.send).toHaveBeenCalledTimes(1);
+    const reply = sent[0];
+    expect(reply.attrs.type).toBe('result');
+    expect(reply.attrs.to).toBe(`${PEER}/desktop`);
+
+    // The reply stanza is an <iq>; its first child should be a <query>.
+    const query = reply.children[0];
+    expect(query.name).toBe('query');
+
+    const identity = query.children.find((c) => c.name === 'identity');
+    expect(identity).toBeDefined();
+    expect(identity.attrs.category).toBe(capsModel.OWN_IDENTITY.category);
+    expect(identity.attrs.type).toBe(capsModel.OWN_IDENTITY.type);
+
+    const featureVars = query.children
+      .filter((c) => c.name === 'feature')
+      .map((c) => c.attrs.var);
+    expect(featureVars).toContain(capsModel.PEER.MARKER);
+    expect(featureVars).toContain(capsModel.PEER.XFER);
+    expect(featureVars).toContain(capsModel.PEER.CALLS);
+    expect(featureVars).toContain('http://jabber.org/protocol/disco#info');
+  });
+
+  it('does not reply to a non-GET IQ', () => {
+    const resultIq = {
+      attrs: { type: 'result', from: `${PEER}/x`, id: 'q1' },
+      is: (name) => name === 'iq',
+      getChild: () => null,
+    };
+    bridge.onIq(resultIq);
+    expect(bridge.connection.send).not.toHaveBeenCalled();
+  });
+
+  it('does not reply to a GET IQ that is not disco#info', () => {
+    const versionGet = {
+      attrs: { type: 'get', from: `${PEER}/x`, id: 'q2' },
+      is: (name) => name === 'iq',
+      getChild: (name, ns) => (name === 'query' && ns === 'jabber:iq:version')
+        ? { attrs: {} }
+        : null,
+    };
+    bridge.onIq(versionGet);
+    expect(bridge.connection.send).not.toHaveBeenCalled();
   });
 });
 

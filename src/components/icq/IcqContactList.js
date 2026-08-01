@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import StatusIcon from './StatusIcon';
+import ContactMenu from './ContactMenu';
 
 /**
  * The Contact List, the way ICQ drew it.
@@ -56,9 +57,15 @@ export default function IcqContactList({
   search = '',
   selectedId = null,
   onSelect,
-  onContextMenu,
+  onSendMessage,
+  onInfo,
+  onRename,
+  onDelete,
+  onInviteGame,
 }) {
   const [collapsed, setCollapsed] = useState(() => new Set());
+  // null while the menu is closed; { contact, x, y } while it is open.
+  const [menu, setMenu] = useState(null);
 
   const groups = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -101,6 +108,14 @@ export default function IcqContactList({
     return next;
   });
 
+  // The coordinates come straight from the DOM event — untrusted input from
+  // a peer's client never reaches here, only the local pointer position does.
+  const openMenu = (e, contact) => {
+    setMenu({ contact, x: e.clientX, y: e.clientY });
+  };
+
+  const closeMenu = () => setMenu(null);
+
   if (groups.length === 0) {
     return (
       <div className="icq-contactlist">
@@ -139,12 +154,27 @@ export default function IcqContactList({
                 contact={contact}
                 selected={contact.id === selectedId}
                 onSelect={onSelect}
-                onContextMenu={onContextMenu}
+                onContextMenu={openMenu}
               />
             ))}
           </div>
         );
       })}
+      {/* The ContactMenu renders via a React portal into document.body, so
+          the Contact List's own overflow cannot clip it — the same fix the
+          Status menu needed, applied one level up. */}
+      {menu && (
+        <ContactMenu
+          contact={menu.contact}
+          position={{ x: menu.x, y: menu.y }}
+          onClose={closeMenu}
+          onSendMessage={onSendMessage}
+          onInfo={onInfo}
+          onRename={onRename}
+          onDelete={onDelete}
+          onInviteGame={onInviteGame}
+        />
+      )}
     </div>
   );
 }

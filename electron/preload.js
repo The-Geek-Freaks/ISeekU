@@ -165,6 +165,27 @@ contextBridge.exposeInMainWorld('api', {
     onSignal:     (cb) => subscribe('icq:signal', cb),
     onSignalRefused: (cb) => subscribe('icq:signal-refused', cb),
   },
+  // IRC — the fourth transport, using channels as Chats and nicks as Contacts.
+  //
+  // The password (server password, if any) travels renderer → main once at
+  // connect and never comes back, following the same discipline as the ICQ
+  // account (ADR 0002).
+  irc: {
+    connect:     (options)      => ipcRenderer.invoke('irc:connect', options),
+    disconnect:  ()             => ipcRenderer.invoke('irc:disconnect'),
+    getStatus:   ()             => ipcRenderer.invoke('irc:status'),
+    getChats:    ()             => ipcRenderer.invoke('irc:get-chats'),
+    getContacts: ()             => ipcRenderer.invoke('irc:get-contacts'),
+    getMessages: (id, opts)     => ipcRenderer.invoke('irc:get-messages', id, opts),
+    sendMessage: (id, body)     => ipcRenderer.invoke('irc:send-message', id, body),
+    markRead:    (id)           => ipcRenderer.invoke('irc:mark-read', id),
+    // Every listener returns its own unsubscribe so a closing window does not
+    // leave a handler behind for the next one to double-fire on.
+    onStatusChanged: (cb) => subscribe('irc:status-changed', cb),
+    onMessage:       (cb) => subscribe('irc:message', cb),
+    onContacts:      (cb) => subscribe('irc:contacts', cb),
+    onError:         (cb) => subscribe('irc:error', cb),
+  },
   // Chat windows
   openChat: (params) => ipcRenderer.invoke('open-chat', params),
   getStoredAvatar: (id) => ipcRenderer.invoke('get-stored-avatar', id),

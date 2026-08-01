@@ -179,11 +179,55 @@ describe('opening a Contact', () => {
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'a@s', uin: 'a' }));
   });
 
-  it('opens the right-click menu instead of the browser one', async () => {
+  it('right-click shows the Contact Menu instead of the browser default', async () => {
     const user = userEvent.setup();
-    const onContextMenu = jest.fn();
-    render(<IcqContactList contacts={[contact('a')]} onSelect={() => {}} onContextMenu={onContextMenu} />);
-    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('a') });
-    expect(onContextMenu).toHaveBeenCalled();
+    render(<IcqContactList contacts={[contact('Alice')]} onSelect={() => {}} />);
+    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('Alice') });
+    expect(screen.getByRole('menu', { name: /Alice/ })).toBeInTheDocument();
+  });
+});
+
+describe('Contact context menu', () => {
+  it('right-click opens the menu for the correct Contact', async () => {
+    const user = userEvent.setup();
+    render(<IcqContactList contacts={[contact('Anna'), contact('Bernd')]} onSelect={() => {}} />);
+    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('Bernd') });
+    // The aria-label names the Contact the menu is for.
+    expect(screen.getByRole('menu', { name: /Bernd/ })).toBeInTheDocument();
+    expect(screen.queryByRole('menu', { name: /Anna/ })).not.toBeInTheDocument();
+  });
+
+  it('Escape closes the menu', async () => {
+    const user = userEvent.setup();
+    render(<IcqContactList contacts={[contact('Alice')]} onSelect={() => {}} />);
+    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('Alice') });
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('clicking outside the menu closes it', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <IcqContactList contacts={[contact('Alice')]} onSelect={() => {}} />
+        <button type="button">Outside</button>
+      </>,
+    );
+    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('Alice') });
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Outside' }));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('Send Message calls onSendMessage with that Contact and closes the menu', async () => {
+    const user = userEvent.setup();
+    const onSendMessage = jest.fn();
+    const alice = contact('Alice');
+    render(<IcqContactList contacts={[alice]} onSelect={() => {}} onSendMessage={onSendMessage} />);
+    await user.pointer({ keys: '[MouseRight]', target: screen.getByText('Alice') });
+    await user.click(screen.getByRole('menuitem', { name: 'Send Message' }));
+    expect(onSendMessage).toHaveBeenCalledWith(expect.objectContaining({ name: 'Alice' }));
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

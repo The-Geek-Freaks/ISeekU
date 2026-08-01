@@ -23,10 +23,12 @@ const presenceModel = require('../lib/icq-presence');
 const contactModel = require('../lib/icq-contact');
 const historyModel = require('../lib/icq-history');
 const signalModel = require('../lib/icq-signal');
+const capsModel = require('../lib/icq-caps');
 
 const NS = {
   roster: 'jabber:iq:roster',
   disco: 'http://jabber.org/protocol/disco#info',
+  caps: 'http://jabber.org/protocol/caps',
   chatStates: 'http://jabber.org/protocol/chatstates',
   receipts: 'urn:xmpp:receipts',
   delay: 'urn:xmpp:delay',
@@ -56,6 +58,10 @@ class IcqBridge extends EventEmitter {
     this.ownStatusText = '';
     this.awayMessage = '';
     this.alerts = new Set(); // JIDs the Owner asked to be told about
+    // ver strings for which a disco#info query is already in flight; prevents
+    // the same query going out twice when multiple presence stanzas arrive before
+    // the first reply comes back.
+    this._pendingCaps = new Set();
   }
 
   /**
@@ -146,6 +152,7 @@ class IcqBridge extends EventEmitter {
     this.status = 'disconnected';
     this.contacts.clear();
     this.presences.clear();
+    this._pendingCaps.clear();
     this.emit('status', this.getStatus());
   }
 
@@ -287,6 +294,10 @@ class IcqBridge extends EventEmitter {
     if (wanted.icqStatus) {
       stanza.append(this.xml('icq', { xmlns: presenceModel.ICQ_NS, status: wanted.icqStatus }));
     }
+    // Every presence carries our capability hash so that any Contact who has
+    // not yet seen it can skip the disco#info query, and so that newly-connected
+    // Contacts learn we are ISeekU without needing to ask.
+    stanza.append(this.xml('c', capsModel.ownCaps()));
     await this.connection.send(stanza);
     this.ownStatus = status;
     this.ownStatusText = statusText || '';
@@ -344,7 +355,87 @@ class IcqBridge extends EventEmitter {
       this.emit('alert', { jid: from, name: contact ? contact.name : from, status });
     }
 
+    // Read caps from the <c/> element if the Contact is available.  An
+    // unavailable presence carries no meaningful capability claim — the Contact
+    // is going away, so there is nothing to query.
+    if (type !== 'unavailable') {
+      const cElem = stanza.getChild('c', NS.caps);
+      if (cElem) {
+        const parsedCaps = capsModel.readCaps(cElem.attrs);
+        if (parsedCaps) {
+          if (capsModel.getCached(parsedCaps.ver)) {
+            // Already verified from a previous query — apply immediately.
+            this._updateContactPeer(from, parsedCaps.ver);
+          } else if (!this._pendingCaps.has(parsedCaps.ver)) {
+            // First time seeing this ver: send one disco#info and wait.
+            this._pendingCaps.add(parsedCaps.ver);
+            // stanza.attrs.from is the full JID (including resource); disco
+            // queries must go to the specific device that sent the presence.
+            this._queryCaps(stanza.attrs.from, from, parsedCaps.ver).catch(() => {});
+          }
+        }
+      }
+    }
+
     this.emit('presence', { jid: from, status, statusText });
+  }
+
+  /**
+   * Update the Contact's peer capability record once a ver is in the cache.
+   *
+   * Emitting 'peer-caps' lets the interface react (e.g. reveal the call button)
+   * without polling. The Contact object is mutated in place because the
+   * interface holds references to it; a replacement would be invisible to
+   * existing holders.
+   */
+  _updateContactPeer(bareJid, ver) {
+    const peer = capsModel.negotiatePeer(ver);
+    const contact = this.contacts.get(bareJid);
+    if (contact) contact.peer = peer;
+    if (peer.isISeekU) {
+      this.emit('peer-caps', { jid: bareJid, peer });
+    }
+  }
+
+  /**
+   * Query a Contact for their full feature set and cache the result.
+   *
+   * Sends a disco#info IQ to the Contact's full JID (device-specific), parses
+   * the identity and feature elements out of the reply, and hands them to
+   * putCache.  putCache recomputes the hash and refuses to store the entry if
+   * the hash does not match what was advertised — so a Contact that returns a
+   * bogus feature list cannot plant false capabilities in the cache.
+   *
+   * Errors are swallowed: a Contact that does not answer is simply not capable
+   * of it, and the safe default (no ISeekU features) is already in place.
+   */
+  async _queryCaps(fullJid, bareJid, ver) {
+    if (!this.connection) return;
+    try {
+      const reply = await this.connection.entity.iqCaller.get(
+        this.xml('query', NS.disco), fullJid,
+      );
+      const identities = reply.getChildren('identity').map((id) => ({
+        category: id.attrs.category || '',
+        type:     id.attrs.type     || '',
+        lang:     id.attrs['xml:lang'] || id.attrs.lang || '',
+        name:     id.attrs.name     || '',
+      }));
+      const features = reply.getChildren('feature')
+        .map((f) => f.attrs.var)
+        .filter((v) => typeof v === 'string' && v.length > 0);
+
+      const result = capsModel.putCache(ver, { identities, features });
+      if (result.ok) this._updateContactPeer(bareJid, ver);
+      // A hash mismatch is already explained by putCache's return value; no
+      // further action is needed here, and nothing goes into the cache.
+    } catch {
+      // A timed-out or refused query leaves the Contact without peer features.
+      // That is the correct safe default — better than claiming capabilities
+      // that were never confirmed.
+    } finally {
+      this._pendingCaps.delete(ver);
+    }
   }
 
   // --- Messages ------------------------------------------------------------
@@ -539,6 +630,45 @@ class IcqBridge extends EventEmitter {
     if (stanza.is('message') && this.onSignal(stanza)) return;
     if (stanza.is('message')) this.onMessage(stanza);
     else if (stanza.is('presence')) this.onPresence(stanza);
+    else if (stanza.is('iq')) this.onIq(stanza);
+  }
+
+  /**
+   * Answer an inbound service-discovery query.
+   *
+   * A Contact's client sends a disco#info GET when it sees our <c/> for the
+   * first time and does not have our ver in its own cache.  We must reply with
+   * our identity and feature list so they can verify our hash, otherwise we are
+   * invisible to every peer on the network.
+   *
+   * Only GET queries with a disco#info payload are handled here; all other IQ
+   * types (results and errors from our own outbound queries, roster pushes, etc.)
+   * are handled elsewhere or ignored.
+   */
+  onIq(stanza) {
+    if (stanza.attrs.type !== 'get') return;
+    const query = stanza.getChild('query', NS.disco);
+    if (!query) return;
+
+    // A GET without a sender cannot be replied to.
+    const to = stanza.attrs.from;
+    if (!to || !this.connection || !this.xml) return;
+
+    const reply = this.xml('iq', { type: 'result', to, id: stanza.attrs.id || '' });
+    const replyQuery = this.xml('query', NS.disco);
+    replyQuery.append(this.xml('identity', {
+      category: capsModel.OWN_IDENTITY.category,
+      type:     capsModel.OWN_IDENTITY.type,
+      name:     capsModel.OWN_IDENTITY.name,
+      // xml:lang is omitted when lang is the empty string — XEP-0030 treats
+      // its absence as equivalent to the no-lang identity.
+      ...(capsModel.OWN_IDENTITY.lang ? { 'xml:lang': capsModel.OWN_IDENTITY.lang } : {}),
+    }));
+    for (const feature of capsModel.OWN_FEATURES) {
+      replyQuery.append(this.xml('feature', { var: feature }));
+    }
+    reply.append(replyQuery);
+    this.connection.send(reply).catch(() => {});
   }
 
   /**

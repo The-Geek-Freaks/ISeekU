@@ -417,6 +417,7 @@ export default function Sidebar({
                   search={search}
                   showOffline={icqShowOffline}
                   onSelect={onSelectChat}
+                  onSendMessage={onSelectChat}
                 />
               )}
             </div>

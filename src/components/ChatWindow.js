@@ -3,6 +3,7 @@ import GAMES from '../games';
 import './ChatWindow.css';
 import StyledBody from './icq/StyledBody';
 import FormatToolbar from './icq/FormatToolbar';
+import GameSession from './icq/GameSession';
 import { toggleStyle } from '../messageStyling';
 
 function formatTime(ts) {
@@ -144,6 +145,8 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
   const resizingRef = useRef(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
+  // Peer game to initiate; set when the Owner picks a p2p game from the menu.
+  const [initiateGame, setInitiateGame] = useState(null);
   const gameBtnRef = useRef(null);
   const gameMenuRef = useRef(null);
   const [lightbox, setLightbox] = useState(null);
@@ -788,16 +791,33 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
           {showGameMenu && (
             <div className="game-menu" ref={gameMenuRef}>
               <div className="game-menu-title">🎮 ICQ Spiele</div>
-              {GAMES.map(g => (
-                <button
-                  key={g.id}
-                  className="game-menu-item"
-                  onClick={() => { window.api?.openGame?.(g.url, g.name); setShowGameMenu(false); }}
-                >
-                  <span className="game-menu-icon">{g.icon}</span>
-                  <span>{g.name}</span>
-                </button>
-              ))}
+              {chat?.service === 'icq' ? (
+                // Peer-to-peer games for ICQ — send an invite to the Contact.
+                [
+                  { id: 'ttt',    icon: '✕○', name: 'Tic-Tac-Toe' },
+                  { id: 'quatro', icon: '🔵',  name: 'Quatro'      },
+                ].map(g => (
+                  <button
+                    key={g.id}
+                    className="game-menu-item"
+                    onClick={() => { setInitiateGame(g.id); setShowGameMenu(false); }}
+                  >
+                    <span className="game-menu-icon">{g.icon}</span>
+                    <span>{g.name}</span>
+                  </button>
+                ))
+              ) : (
+                GAMES.map(g => (
+                  <button
+                    key={g.id}
+                    className="game-menu-item"
+                    onClick={() => { window.api?.openGame?.(g.url, g.name); setShowGameMenu(false); }}
+                  >
+                    <span className="game-menu-icon">{g.icon}</span>
+                    <span>{g.name}</span>
+                  </button>
+                ))
+              )}
             </div>
           )}
 
@@ -903,6 +923,17 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
             </div>
           </div>
         </div>
+      )}
+
+      {/* Peer game session — always mounted for ICQ 1-to-1 chats so that
+          incoming invites can be received even before the Owner opens the menu. */}
+      {chat?.service === 'icq' && !chat?.isGroup && (
+        <GameSession
+          jid={chat.id}
+          contactName={chat.name || chat.id}
+          initiateGame={initiateGame}
+          onInitiateClear={() => setInitiateGame(null)}
+        />
       )}
 
       {/* Lightbox */}

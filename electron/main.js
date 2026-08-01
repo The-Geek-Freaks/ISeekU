@@ -114,6 +114,23 @@ try { telegramBridge = require('./telegram-bridge'); } catch (e) {
   telegramBridge = { init(){}, requestCode(){}, signIn(){}, startQRLogin(){}, submit2FA(){}, getStatus:()=>'error', getDialogs:()=>[], getMessages:()=>[], sendMessage(){} };
 }
 
+// ── The IRC account ──────────────────────────────────────────
+// Loaded unconditionally, like ICQ: it owns only a socket and costs nothing
+// until the Owner signs in. The try-catch keeps a missing or broken module
+// from taking the whole application down.
+let ircBridge;
+try {
+  const { IrcBridge } = require('./irc/bridge');
+  ircBridge = new IrcBridge();
+} catch (e) {
+  console.error('[IRC bridge load]', e.message);
+  ircBridge = {
+    on(){}, getStatus:()=>({ status:'error' }), connect(){},
+    disconnect(){}, listChats:()=>[], listContacts:()=>[], getMessages:()=>[], sendMessage(){},
+    markRead(){},
+  };
+}
+
 // ── The ICQ account (XMPP) ────────────────────────────────────
 // The native transport, so unlike the other two it is always loaded: it holds
 // one socket and no browser, and costs nothing until someone signs in.
@@ -277,6 +294,7 @@ app.on('before-quit', (e) => {
   Promise.all([
     whatsappBridge.shutdown?.().catch(() => {}),
     telegramBridge.shutdown?.().catch(() => {}),
+    ircBridge.shutdown?.().catch(() => {}),
   ]).then(() => {
     clearTimeout(timeout);
     app.exit(0);
@@ -594,6 +612,34 @@ ipcMain.handle('icq:answer-authorization', async (e, jid, ok, reason) => icqBrid
 ipcMain.handle('icq:set-alert',      async (e, jid, on)        => icqBridge.setAlert(jid, on));
 ipcMain.handle('icq:search-history', async (e, query, opts)    => icqBridge.searchHistory(query, opts));
 ipcMain.handle('icq:server-features', async ()                 => [...(icqBridge.serverFeatures || [])]);
+
+// ── IPC: the IRC account ──────────────────────────────────────
+// The same broadcast-to-all-windows pattern as ICQ. Chat windows and the
+// Contact List both need messages and status updates, and neither knows the
+// other is open.
+function ircBroadcast(channel, payload) {
+  BrowserWindow.getAllWindows().forEach((w) => {
+    if (!w.isDestroyed()) w.webContents.send(channel, payload);
+  });
+}
+
+for (const [event, channel] of Object.entries({
+  status:   'irc:status-changed',
+  message:  'irc:message',
+  contacts: 'irc:contacts',
+  error:    'irc:error',
+})) {
+  ircBridge.on(event, (payload) => ircBroadcast(channel, payload));
+}
+
+ipcMain.handle('irc:connect',      async (e, options)      => ircBridge.connect(options));
+ipcMain.handle('irc:disconnect',   async ()                => ircBridge.disconnect());
+ipcMain.handle('irc:status',       async ()                => ircBridge.getStatus());
+ipcMain.handle('irc:get-chats',    async ()                => ircBridge.listChats());
+ipcMain.handle('irc:get-contacts', async ()                => ircBridge.listContacts());
+ipcMain.handle('irc:get-messages', async (e, id, opts)     => ircBridge.getMessages(id, opts));
+ipcMain.handle('irc:send-message', async (e, id, body)     => ircBridge.sendMessage(id, body));
+ipcMain.handle('irc:mark-read',    async (e, id)           => ircBridge.markRead(id));
 
 // -- Themes ---------------------------------------------------
 // A theme is a JSON file with the same shape as a built-in skin, dropped into

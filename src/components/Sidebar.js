@@ -4,14 +4,12 @@ import { SKINS, setSkin, getSavedSkinId } from '../skins';
 import StatusIcon from './icq/StatusIcon';
 import IcqContactList from './icq/IcqContactList';
 import StatusMenu from './icq/StatusMenu';
+import IcqMainMenu from './icq/IcqMainMenu';
 
 const GAMES = [
   { id: '8ball', name: '8 Ball Pool',  icon: '🎱', url: 'https://bloob.io/de/8ballpool' },
   { id: 'lama',  name: 'Slide-A-Lama', icon: '🦙', url: 'https://slidealama.eu/' },
 ];
-
-// Where the in-app "support" button sends people.
-const DONATE_URL = 'https://paypal.me/sparky512';
 
 const STATUS_COLOR = {
   ready: '#44DD44', 'needs-auth': '#F5C400', 'no-credentials': '#F5C400',
@@ -287,14 +285,14 @@ export default function Sidebar({
             </div>
           )}
         </div>
-        {onToggleSound && (
+        {activeService !== 'icq' && onToggleSound && (
           <button
             className={`sound-btn${soundEnabled ? '' : ' muted'}`}
             onClick={onToggleSound}
             title={soundEnabled ? 'Sound aus' : 'Sound an'}
           >{soundEnabled ? '🔔' : '🔕'}</button>
         )}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        {activeService !== 'icq' && <div style={{ position: 'relative', flexShrink: 0 }}>
           <button
             ref={gameBtnRef}
             className={`sound-btn${showGameMenu ? ' active' : ''}`}
@@ -316,8 +314,8 @@ export default function Sidebar({
               ))}
             </div>
           )}
-        </div>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
+        </div>}
+        {activeService !== 'icq' && <div style={{ position: 'relative', flexShrink: 0 }}>
           <button
             ref={skinBtnRef}
             className={`sound-btn${showSkinMenu ? ' active' : ''}`}
@@ -340,10 +338,10 @@ export default function Sidebar({
               ))}
             </div>
           )}
-        </div>
-        <button className="scale-btn" title="Kontakte kleiner" onClick={onDecreaseContactScale}>A-</button>
-        <button className="scale-btn" title="Kontakte größer" onClick={onIncreaseContactScale}>A+</button>
-        {onLogout && (
+        </div>}
+        {activeService !== 'icq' && <button className="scale-btn" title="Kontakte kleiner" onClick={onDecreaseContactScale}>A-</button>}
+        {activeService !== 'icq' && <button className="scale-btn" title="Kontakte größer" onClick={onIncreaseContactScale}>A+</button>}
+        {activeService !== 'icq' && onLogout && (
           <button className="logout-btn" onClick={onLogout} title="Logout">⏏</button>
         )}
       </div>
@@ -454,15 +452,26 @@ export default function Sidebar({
         </>
       )}
 
-      {/* Support / donate footer — opens the donation page in the browser */}
-      <button
-        className="donate-footer"
-        onClick={() => window.api?.openExternal?.(DONATE_URL)}
-        title="Projekt unterstützen"
-      >
-        <span className="donate-heart">♥</span>
-        <span>Projekt unterstützen</span>
-      </button>
+      {/* The bottom bar. On ICQ this is the flower button, where the original
+          kept every command in the application — see IcqMainMenu. The other
+          transports keep their toolbar in the header instead. */}
+      {activeService === 'icq' && (
+        <div className="icq-bottombar">
+          <IcqMainMenu
+            ownStatus={ownStatus}
+            soundEnabled={soundEnabled}
+            onToggleSound={onToggleSound}
+            skins={SKINS}
+            currentSkin={skinId}
+            onChooseSkin={chooseSkin}
+            games={GAMES}
+            onOpenGame={(g) => window.api?.openGame?.(g.url) || window.api?.openExternal?.(g.url)}
+            onIncreaseScale={onIncreaseContactScale}
+            onDecreaseScale={onDecreaseContactScale}
+            onSignOff={onLogout}
+          />
+        </div>
+      )}
     </div>
   );
 }

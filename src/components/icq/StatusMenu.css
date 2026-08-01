@@ -3,7 +3,10 @@
 
 .icq-status-menu {
   position: absolute;
-  bottom: var(--icq-bottombar-h, 22px);
+  /* Opens downwards: its trigger is the Owner's own row at the TOP of the
+     client area. Opening upwards — which is right for a button in the bottom
+     bar — would push it off the window entirely. */
+  top: 100%;
   left: 0;
   z-index: 40;
   min-width: 170px;

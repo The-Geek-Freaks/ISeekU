@@ -230,7 +230,13 @@ export default function App() {
     // --- the ICQ account ---------------------------------------------------
     // Ask once at start: the connection lives in the main process and may
     // already be up from a previous window.
-    api.icq?.getStatus?.().then((s) => { if (s?.status) setIcqStatus(s.status); }).catch(() => {});
+    api.icq?.getStatus?.().then((s) => {
+      if (s?.status) setIcqStatus(s.status);
+      // The connection may already be up from a previous window, in which
+      // case our own Status is whatever it was left as — not 'offline'.
+      if (s?.ownStatus) setOwnStatus(s.ownStatus);
+      if (typeof s?.ownStatusText === 'string') setOwnStatusText(s.ownStatusText);
+    }).catch(() => {});
 
     const removeIcqStatus = api.icq?.onStatusChanged?.((s) => {
       setIcqStatus(s?.status || 'disconnected');

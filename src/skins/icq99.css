@@ -391,6 +391,23 @@
   font-weight: bold;
   font-size: var(--icq-font-size);
   text-shadow: none;
+  /* The clipping moves here from .user-info — see below. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .user-info clips its overflow so a long name gets an ellipsis. That also
+   clipped the Status menu, which is anchored inside it and drops downwards —
+   the menu was rendering and passing its test while being invisible. The
+   clipping belongs on the name, not on the box that also contains a popup. */
+:root[data-skin='icq99'] .sidebar {
+  overflow: visible;
+}
+
+:root[data-skin='icq99'] .user-info {
+  overflow: visible;
+  position: relative;
 }
 
 :root[data-skin='icq99'] .user-status {

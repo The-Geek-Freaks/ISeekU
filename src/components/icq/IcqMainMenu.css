@@ -1,0 +1,121 @@
+/* The flower button and its menu. Win32 menu geometry: 18px rows, a 16px
+   gutter for check marks, a groove for separators, and instant highlight. */
+
+.icq-mainmenu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.icq-flower-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  height: 20px;
+  padding: 0 5px;
+  font-weight: bold;
+}
+
+/* The menu opens upwards — the button lives at the bottom of the window. */
+.icq-menu {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  z-index: 50;
+  min-width: 178px;
+  padding: 2px;
+  margin-bottom: 1px;
+  background: var(--win-face, #c0c0c0);
+  border: 1px solid;
+  border-color: var(--win-highlight, #fff) var(--win-dark-shadow, #000) var(--win-dark-shadow, #000) var(--win-highlight, #fff);
+  box-shadow: inset 1px 1px 0 var(--win-light, #dfdfdf), inset -1px -1px 0 var(--win-shadow, #808080),
+              2px 2px 0 rgba(0, 0, 0, .35);
+  font-family: var(--icq-font, 'MS Sans Serif', Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+}
+
+.icq-menu-item-wrap {
+  position: relative;
+}
+
+.icq-menu-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 18px;
+  padding: 0 6px 0 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--win-window-text, #000);
+  text-align: left;
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* Instant, like every native menu. No transition, no fade. */
+.icq-menu-item:hover:not(:disabled),
+.icq-menu-item:focus-visible {
+  background: var(--win-select, #000080);
+  color: var(--win-select-text, #fff);
+  outline: none;
+}
+
+.icq-menu-item:disabled {
+  color: var(--win-grey-text, #808080);
+  text-shadow: 1px 1px 0 var(--win-highlight, #fff);
+}
+
+/* The gutter every Win32 menu reserves for check marks, so labels line up
+   whether or not an item is checkable. */
+.icq-menu-check {
+  flex: 0 0 16px;
+  text-align: center;
+  font-size: 10px;
+}
+
+.icq-menu-label {
+  flex: 1;
+}
+
+.icq-menu-shortcut {
+  margin-left: 16px;
+  color: var(--win-grey-text, #808080);
+}
+
+.icq-menu-item:hover .icq-menu-shortcut {
+  color: var(--win-select-text, #fff);
+}
+
+.icq-menu-arrow {
+  margin-left: 12px;
+  font-size: 9px;
+}
+
+.icq-menu-swatch {
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border: 1px solid var(--win-dark-shadow, #000);
+}
+
+/* A Win32 separator is a groove: one dark line with a light one beneath. */
+.icq-menu-sep {
+  height: 2px;
+  margin: 2px 1px;
+  border-top: 1px solid var(--win-shadow, #808080);
+  border-bottom: 1px solid var(--win-highlight, #fff);
+}
+
+.icq-submenu {
+  position: absolute;
+  left: 100%;
+  bottom: 0;
+  min-width: 150px;
+  padding: 2px;
+  background: var(--win-face, #c0c0c0);
+  border: 1px solid;
+  border-color: var(--win-highlight, #fff) var(--win-dark-shadow, #000) var(--win-dark-shadow, #000) var(--win-highlight, #fff);
+  box-shadow: inset 1px 1px 0 var(--win-light, #dfdfdf), inset -1px -1px 0 var(--win-shadow, #808080),
+              2px 2px 0 rgba(0, 0, 0, .35);
+}

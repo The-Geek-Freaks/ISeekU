@@ -133,3 +133,109 @@ Recorded so the same ground is not covered twice:
 - The German Wikipedia article on ICQ carries no screenshots.
 - icq.de in the Wayback Machine was a thin marketing landing page with no
   interface content.
+
+---
+
+## Evidence from screenshots supplied by the project owner
+
+Thirteen screenshots covering ICQ 2001b, 5, 6, 7, 8, the Mac and mobile
+clients, and the skin scene. These close several gaps the research passes could
+not — in particular the German strings and the games, neither of which was
+retrievable from archives.
+
+### German UI strings — VERIFIED from an ICQ 6 German message window
+
+The earlier research could not find a single German-locale screenshot. One of
+these is a German ICQ 6 message window, and it settles several terms:
+
+| German | English | Where |
+|---|---|---|
+| `Nachrichtensitzung` | Message Session | The window title |
+| `Senden per:` | Send via: | Above the send button, with radio buttons |
+| `Senden` | Send | The send button |
+
+The window title form is `<contact> - Nachrichtensitzung`, matching the English
+`<contact> - Message Session`.
+
+This also confirms the earlier finding that German localisation was thorough by
+ICQ 6, unlike the 99b–2001b era where the tray menu stayed English.
+
+### The games — VERIFIED from a contact context menu
+
+The context menu on a contact had a **Launch** section listing:
+
+- **RPS Online** — a board game, not rock-paper-scissors as the name suggests.
+  A separate screenshot shows an 8x8 grid of sumo pieces, played against a
+  contact.
+- **Slide-a-lama**
+- **Sumo Volleyball**
+- **More…**
+
+Above it, a **Send** section: Send Message, Send SMS, Send File, Push2Talk,
+Multi User Chat. Below it, a **User** section: Open Saved Files, User's
+Details, Move To Group, Rename, Delete.
+
+This is the authoritative list of what a right-click on a contact offered, and
+it is worth rebuilding as the contact context menu.
+
+### ICQ 2001b Services menu — VERIFIED, the full feature surface
+
+The Services button opened a menu with four groups:
+
+**Communication:** My Communication Center · Answering Service · SMS Message ·
+ICQphone · Email · Phone "Follow Me" (with Current Location, Set Current
+Location, Phone Status, ICQ Phone Center, Phone Directories)
+
+**Directories:** ICQ White Pages · Search The Web
+
+**Communities:** ICQ Topics Directory Bar · Shared Files
+
+**Others:** ICQ Free Info · Newsletter · Translation · ICQMail
+
+**More Features:** Add More Features
+
+The same screenshot shows the main window carried a **Topics** sidebar —
+Welcome, Careers, Games, Life&Love, Mobile, Movies&TV, Music, Shopping, Sports,
+Tech&Net, Travel — and a translation box at the bottom ("Enter word to
+translate"). The buttons under the contact list read *How to Start*, *Add
+Features*, *Chat With A Friend*, and the bottom row is *Add/Invite Users*,
+*Services*, *My ICQ*, with *Main* and *Online* tabs.
+
+Most of this needed ICQ's server infrastructure and is gone. It is recorded
+because it shows how much of the client was a portal rather than a messenger —
+which is a design fact worth knowing even where it cannot be rebuilt.
+
+### ICQ 5 layout — VERIFIED
+
+Confirms the classic reconstruction and adds detail: an icon toolbar across the
+top, a status dropdown showing the flower and the word "Online", contact rows
+with the flower on the left and per-contact capability icons on the RIGHT
+(mobile phone, forward arrow, document), a plain "Online" divider line rather
+than a filled group band, a "System" row at the bottom, an advertising banner,
+and a "Search Google" box at the very bottom.
+
+The message window is the classic split log: sender name in colour with a
+timestamp on its own line, then the text. Two different colours for the two
+participants — blue and red in the sample.
+
+### ICQ 6 and 7 — VERIFIED additions
+
+- ICQ 6 chat windows were **tabbed**, one tab per conversation.
+- A dial pad was docked under the contact list — ICQphone.
+- The message window had a left icon rail, avatars for BOTH participants on the
+  right, a "tZers" button, and a "Send via:" radio group.
+- ICQ 7's contact list showed Facebook contacts as their own group, and
+  per-contact network badges.
+- Advertising banners were present in both, at the bottom of the chat window.
+
+### Skins were a scene, not a footnote
+
+A German skin site (icq-tools.de) lists dozens of ICQ 7 skins — Hello Kitty,
+SpongeBob, Windows Seven, Sheepworld, and so on — with star ratings, alongside
+separate sections for ICQ 6 skins, ICQ flower icons, and sound packs.
+
+This is worth recording because it justifies the theme system: skinning was not
+a niche feature, it was most of what people did with the client. It also shows
+skins changed background imagery, not only colours — which is the gap the
+current JSON theme format deliberately does not fill, and the reason a
+separate, safe mechanism for user-chosen local images is worth building.

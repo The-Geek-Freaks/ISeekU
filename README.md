@@ -53,6 +53,7 @@ server, not just icqr.net.
 | **ICQ** | The native one — XMPP, against icqr.net or any other server |
 | **WhatsApp** | Inherited from the project this is forked from, kept working |
 | **Telegram** | Same |
+| **IRC** | RFC 1459/2812 with IRCv3 tags. A channel is a Chat, a nick is a Contact, and away maps onto the ICQ Statuses |
 
 WhatsApp and Telegram were the whole point of the upstream project. They are
 untouched and appear as their own tabs beside ICQ —

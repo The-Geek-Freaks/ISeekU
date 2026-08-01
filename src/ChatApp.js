@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import TitleBar from './components/TitleBar';
 import ChatWindow from './components/ChatWindow';
 import './App.css';
 
@@ -400,7 +399,6 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
 
   return (
     <div className="app-root">
-      <TitleBar title={`${service === 'whatsapp' ? 'WhatsApp' : 'Telegram'} — ${chatName || 'Chat'}`} />
       <ChatWindow
         chat={{ id: chatId, name: chatName, service, avatar: chatAvatar, members, isGroup: !!isGroup }}
         messages={messages}

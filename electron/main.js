@@ -167,7 +167,11 @@ function createContactListWindow() {
     minWidth: 240,
     minHeight: 420,
     maxWidth: 360,
-    frame: false,
+    // The real ICQ never drew its own title bar — it used the operating
+    // system's, and its window looked like every other window on the desktop.
+    // That is a large part of why it felt native, so we use the OS frame too
+    // and the application draws only its client area.
+    frame: true,
     resizable: true,
     show: true,
     icon: getWindowIconPath(),
@@ -177,7 +181,7 @@ function createContactListWindow() {
       sandbox: false,
       preload: path.join(__dirname, 'preload.js'),
     },
-    title: 'ICQ Kontaktliste',
+    title: 'ISeekU',
   });
   contactListWindow.loadURL(devUrl());
   wireWindowDiagnostics(contactListWindow, 'contact-list');
@@ -200,7 +204,8 @@ function createChatWindow(chatId, chatName, service, avatar, isGroup) {
     // Enforce stricter widths: narrow for 1:1, wide for groups (IRC style)
     minWidth: isGroup ? 760 : 480,
     minHeight: 300,
-    frame: false,
+    // Native frame, as above.
+    frame: true,
     resizable: true,
     icon: getWindowIconPath(),
     webPreferences: {

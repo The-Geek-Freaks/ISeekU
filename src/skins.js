@@ -14,6 +14,50 @@ const STORAGE_KEY = 'icq-skin';
 
 export const SKINS = [
   {
+    // ICQ 7 (2010) — the late era. Colours and metrics sampled from ICQ's own
+    // product screenshot of the contact list, recovered from the Wayback
+    // Machine; see the header of skins/icq78.css for which values are measured
+    // and which are estimated.
+    //
+    // ICQ 7 drew its own window header. This skin does not: the OS paints the
+    // caption and the skin applies the era's design language below it.
+    id: 'icq78',
+    name: 'ICQ 7 (2010)',
+    swatch: '#97C770',
+    vars: {
+      '--icq-bg': '#F2F4EE',
+      '--icq-bg-mid': '#FFFFFF',
+      '--icq-bg-light': '#EEF6E6',
+      '--icq-teal': '#7AB648',
+      '--icq-teal-dark': '#5D9433',
+      '--icq-teal-light': '#C4DFA6',
+      '--icq-header-grad1': '#DEEDD4',
+      '--icq-header-grad2': '#97C770',
+      '--icq-header-bg': 'linear-gradient(180deg, #DEEDD4 0%, #C5E2B6 45%, #97C770 100%)',
+      '--icq-yellow': '#F5C400',
+      '--icq-white': '#FFFFFF',
+      '--icq-text': '#1A1A1A',
+      '--icq-text-dim': '#8A8A8A',
+      '--icq-border': '#D5DACB',
+      '--icq-border-light': '#FFFFFF',
+      '--icq-online': '#7AB648',
+      '--icq-away': '#F5C400',
+      '--icq-offline': '#B0B0B0',
+      '--icq-dnd': '#D64545',
+      '--icq-btn-bg': '#EEF2E8',
+      '--icq-btn-hover': '#EEF6E6',
+      '--icq-btn-active': '#E6EEDD',
+      '--icq-input-bg': '#FFFFFF',
+      // This era did use bubbles, unlike the classic client.
+      '--icq-bubble-me': 'linear-gradient(180deg, #FFFFFF, #EEF6E6)',
+      '--icq-bubble-me-border': '#C3CDB6',
+      '--icq-avatar-bg': '#E3E4DA',
+      // ICQ 7 put a photograph in every contact row — the one era where the
+      // contact list genuinely showed avatars.
+      '--icq-list-avatar-display': 'flex',
+    },
+  },
+  {
     // ICQ 2001b on Windows 98 — the classic era. Colours below are the
     // Windows 98 GetSysColor() defaults; the flower greens are measured from
     // the 2001b splash screen. The bulk of the skin lives in
@@ -162,7 +206,7 @@ export const SKINS = [
   },
 ];
 
-const DEFAULT_SKIN_ID = 'icq99';
+const DEFAULT_SKIN_ID = 'icq78';
 
 export function getSkin(id) {
   return SKINS.find(s => s.id === id) || SKINS[0];

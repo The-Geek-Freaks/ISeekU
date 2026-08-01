@@ -1,0 +1,501 @@
+/* ============================================================================
+   ICQ 7 — the late era.
+
+   Reference: ICQ 7's own product screenshot of the contact list, 234x633,
+   published on c.icq.com and recovered from the Wayback Machine. Every colour
+   and metric marked VERIFIED below was sampled from that image pixel by pixel;
+   anything marked ESTIMATED is a reasoned guess and says so.
+
+   One deliberate departure from the original. ICQ 7 drew its own window
+   header — a green gradient bar with the logo, a "Menu" dropdown and its own
+   window buttons. This client uses the operating system's frame instead,
+   because that is what was asked for and because faking window chrome inside
+   Electron is the fastest way to look like a web page imitating an
+   application. So this skin applies ICQ 7's design language to the client
+   area and lets the OS paint the caption. It is a recreation of the look, not
+   a pixel copy of the window.
+
+   How this differs from icq99.css, in one line: that era was Windows 98 grey
+   with pure-primary icons and 16px rows; this one is pastel green with
+   photographs and 31px rows. They are two different applications wearing the
+   same name, which is exactly why both exist as skins.
+   ========================================================================= */
+
+:root[data-skin='icq78'] {
+  /* --- Greens, sampled from the ICQ 7 product shot -------------------- */
+  /* The header gradient, top to bottom. VERIFIED at x=120, y=2..20. */
+  --icq7-header-top: #deedd4;
+  --icq7-header-mid: #c5e2b6;
+  --icq7-header-bottom: #97c770;
+
+  /* The selected contact row. VERIFIED at y=424..432. */
+  --icq7-select-top: #c4dfa6;
+  --icq7-select-bottom: #badb98;
+
+  /* The window's outer edge. VERIFIED at x=2 and x=231. */
+  --icq7-frame: #e3e4da;
+
+  /* Accents. ESTIMATED — interpolated from the header gradient. */
+  --icq7-green: #7ab648;
+  --icq7-green-dark: #5d9433;
+  --icq7-hover: #eef6e6;
+
+  /* --- Surfaces --------------------------------------------------------- */
+  --icq7-bg: #ffffff;          /* VERIFIED — the list is plain white */
+  --icq7-panel: #f2f4ee;       /* ESTIMATED — search and toolbar strips */
+
+  /* --- Text ------------------------------------------------------------- */
+  --icq7-text: #1a1a1a;        /* ESTIMATED */
+  --icq7-text-dim: #8a8a8a;    /* ESTIMATED — the status line under a name */
+  --icq7-text-group: #5d9433;  /* ESTIMATED — group headers are green text */
+
+  /* --- Metrics, measured from the reference image ----------------------- */
+  --icq7-header-h: 29px;       /* VERIFIED — green band y=2..30 */
+  --icq7-row-h: 31px;          /* VERIFIED — selected band y=411..441 */
+  --icq7-avatar: 26px;         /* ESTIMATED — the photo at the row's right */
+  --icq7-icon: 16px;
+  --icq7-search-h: 22px;       /* ESTIMATED */
+  --icq7-tab-h: 26px;          /* ESTIMATED */
+  --icq7-group-h: 22px;        /* ESTIMATED */
+  --icq7-window-w: 234px;      /* VERIFIED — the reference image width */
+
+  /* --- Type ------------------------------------------------------------- */
+  /* Segoe UI is the Windows 7 system font and what this era rendered with.
+     Tahoma is the fallback for older systems, matching what ICQ itself did. */
+  --icq7-font: 'Segoe UI', Tahoma, 'MS Sans Serif', sans-serif;
+  --icq7-font-size: 12px;      /* ESTIMATED */
+  --icq7-font-size-status: 11px;
+  --icq7-font-size-msg: 13px;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+
+   Unlike the classic skin, this era DID have soft edges and did antialias its
+   text — so neither is switched off here. Transitions stay off anyway: a
+   contact-list hover seen a hundred times an hour should not animate, whatever
+   the year.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] body {
+  background: var(--icq7-bg);
+  color: var(--icq7-text);
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size);
+}
+
+:root[data-skin='icq78'] * {
+  transition: none !important;
+}
+
+/* ---------------------------------------------------------------------------
+   The Owner's row
+
+   In ICQ 7 this sat directly under the window header: a large photograph on
+   the left, the flower and name beside it, and the status message in a
+   rounded speech bubble to the right. Here it is the top of the client area,
+   since the OS owns the caption.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .user-header {
+  background: linear-gradient(180deg,
+    var(--icq7-header-top) 0%,
+    var(--icq7-header-mid) 45%,
+    var(--icq7-header-bottom) 100%) !important;
+  color: var(--icq7-text);
+  border-bottom: 1px solid var(--icq7-green-dark);
+  padding: 4px 6px;
+  gap: 6px;
+}
+
+:root[data-skin='icq78'] .user-name {
+  color: var(--icq7-text);
+  font-weight: 600;
+  font-size: 13px;
+  text-shadow: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The Status menu drops out of this row; neither it nor .sidebar may clip. */
+:root[data-skin='icq78'] .user-info {
+  overflow: visible;
+  position: relative;
+}
+
+:root[data-skin='icq78'] .sidebar {
+  overflow: visible;
+}
+
+:root[data-skin='icq78'] .icq-own-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 1px 4px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, .75);
+  font: inherit;
+  font-size: var(--icq7-font-size-status);
+  color: var(--icq7-text);
+  text-align: left;
+  cursor: default;
+}
+
+:root[data-skin='icq78'] .icq-own-status > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Search and tabs
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .search-bar {
+  background: var(--icq7-panel);
+  padding: 3px 5px;
+}
+
+:root[data-skin='icq78'] .icq-input,
+:root[data-skin='icq78'] input.win98-input,
+:root[data-skin='icq78'] .search-input {
+  height: var(--icq7-search-h);
+  padding: 2px 7px;
+  border: 1px solid #c4c9bd;
+  border-radius: 11px;
+  background: #fff;
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size);
+  color: var(--icq7-text);
+  box-shadow: none;
+}
+
+:root[data-skin='icq78'] .icq-input:focus {
+  border-color: var(--icq7-green);
+  outline: none;
+}
+
+:root[data-skin='icq78'] .service-tabs,
+:root[data-skin='icq78'] .icq-tabs {
+  display: flex;
+  align-items: stretch;
+  height: var(--icq7-tab-h);
+  /* Without this the strip is a flex item that shrinks under pressure from
+     the contact list below, and the tabs end up overlapping the first group
+     header. */
+  flex: 0 0 var(--icq7-tab-h);
+  background: var(--icq7-panel);
+  border-bottom: 1px solid #d5dacb;
+}
+
+:root[data-skin='icq78'] .svc-tab,
+:root[data-skin='icq78'] .icq-tab {
+  height: var(--icq7-tab-h);
+  padding: 0 9px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--icq7-text-dim);
+  font-size: var(--icq7-font-size);
+}
+
+/* The active tab is marked by a green underline, not by a raised bevel. */
+:root[data-skin='icq78'] .svc-tab.active,
+:root[data-skin='icq78'] .icq-tab[data-active='true'] {
+  background: var(--icq7-bg);
+  border-bottom-color: var(--icq7-green);
+  color: var(--icq7-text);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   Contact List
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-contactlist {
+  background: var(--icq7-bg);
+  font-size: var(--icq7-font-size);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* Group headers had NO coloured band — VERIFIED: the reference image is white
+   behind "My friends", with only the arrow and text in green. Painting a band
+   here is the most obvious way to get this era wrong. */
+:root[data-skin='icq78'] .icq-group {
+  height: var(--icq7-group-h);
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+  background: var(--icq7-bg);
+  border: none;
+  color: var(--icq7-text-group);
+  font-weight: 600;
+  cursor: default;
+}
+
+:root[data-skin='icq78'] .icq-group-count {
+  margin-left: auto;
+  padding-right: 8px;
+  font-weight: normal;
+  color: var(--icq7-text-dim);
+}
+
+/* 31px rows, because this era put a photograph in each one. */
+:root[data-skin='icq78'] .icq-contact {
+  height: var(--icq7-row-h);
+  display: flex;
+  align-items: center;
+  padding: 0 6px 0 8px;
+  gap: 5px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+:root[data-skin='icq78'] .icq-contact:hover {
+  background: var(--icq7-hover);
+}
+
+:root[data-skin='icq78'] .icq-contact[data-selected='true'] {
+  background: linear-gradient(180deg, var(--icq7-select-top) 0%, var(--icq7-select-bottom) 100%);
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-contact[data-status='offline'] {
+  color: var(--icq7-text-dim);
+}
+
+:root[data-skin='icq78'] .icq-contact[data-status='offline'] .icq-status-icon {
+  /* Offline contacts kept their photo and lost their colour. */
+  filter: grayscale(1);
+  opacity: .55;
+}
+
+:root[data-skin='icq78'] .icq-contact-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The status line sits UNDER the name in this era rather than beside it, so
+   the row needs two lines of text in its 31px. */
+:root[data-skin='icq78'] .icq-contact-status {
+  font-style: normal;
+  font-size: var(--icq7-font-size-status);
+  color: var(--icq7-text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+:root[data-skin='icq78'] .icq-contact-unread {
+  margin-left: auto;
+  padding: 0 5px;
+  background: var(--icq7-green);
+  color: #fff;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 15px;
+  border-radius: 8px;
+}
+
+:root[data-skin='icq78'] .icq-empty {
+  padding: 10px 8px;
+  color: var(--icq7-text-dim);
+}
+
+:root[data-skin='icq78'] .icq-status-icon {
+  width: var(--icq7-icon);
+  height: var(--icq7-icon);
+  flex: 0 0 var(--icq7-icon);
+}
+
+/* Waiting events pulse rather than hard-blink: by 2010 the interface had
+   softened, and a two-frame flash would look broken next to rounded corners
+   and photographs. */
+:root[data-skin='icq78'] .icq-contact[data-unread='true'] .icq-status-icon {
+  animation: icq78-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes icq78-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin='icq78'] .icq-contact[data-unread='true'] .icq-status-icon {
+    animation: none;
+  }
+  :root[data-skin='icq78'] .icq-contact[data-unread='true'] .icq-contact-name {
+    font-weight: 700;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-btn,
+:root[data-skin='icq78'] .win98-btn {
+  min-width: 64px;
+  height: 23px;
+  padding: 0 12px;
+  border: 1px solid #b6bfa8;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef2e8 100%);
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size);
+  color: var(--icq7-text);
+  box-shadow: none;
+  cursor: default;
+}
+
+:root[data-skin='icq78'] .icq-btn:hover {
+  border-color: var(--icq7-green);
+  background: linear-gradient(180deg, #ffffff 0%, var(--icq7-hover) 100%);
+}
+
+:root[data-skin='icq78'] .icq-btn:active {
+  background: linear-gradient(180deg, #e6eedd 0%, #f4f8ef 100%);
+  padding: 1px 12px 0;
+}
+
+:root[data-skin='icq78'] .icq-btn:disabled {
+  color: #b0b0b0;
+  text-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Bottom bar and menus
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-bottombar {
+  height: 26px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 4px;
+  background: var(--icq7-panel);
+  border-top: 1px solid #d5dacb;
+}
+
+:root[data-skin='icq78'] .icq-menu,
+:root[data-skin='icq78'] .icq-submenu,
+:root[data-skin='icq78'] .icq-status-menu {
+  background: #fff;
+  border: 1px solid #c4c9bd;
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .22);
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size);
+}
+
+:root[data-skin='icq78'] .icq-menu-item:hover:not(:disabled),
+:root[data-skin='icq78'] .icq-status-item:hover,
+:root[data-skin='icq78'] .icq-status-history-item:hover {
+  background: var(--icq7-hover);
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-menu-sep {
+  border-top: 1px solid #e2e5dc;
+  border-bottom: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Message window
+
+   ICQ 7 did use bubbles, unlike the classic client — so unlike icq99.css this
+   skin does not fight them.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-messages {
+  background: var(--icq7-bg);
+  font-size: var(--icq7-font-size-msg);
+  padding: 6px 8px;
+}
+
+:root[data-skin='icq78'] .icq-msg-sender {
+  font-weight: 600;
+  color: var(--icq7-green-dark);
+}
+
+:root[data-skin='icq78'] .icq-msg[data-from-me='true'] .icq-msg-sender {
+  color: #4a7fb5;
+}
+
+:root[data-skin='icq78'] .icq-msg-time {
+  color: var(--icq7-text-dim);
+  font-size: var(--icq7-font-size-status);
+}
+
+:root[data-skin='icq78'] .icq-compose {
+  background: #fff;
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size-msg);
+  padding: 5px 7px;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Scrollbars — thin and light, as the era drew them
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+:root[data-skin='icq78'] ::-webkit-scrollbar-track {
+  background: var(--icq7-panel);
+}
+
+:root[data-skin='icq78'] ::-webkit-scrollbar-thumb {
+  background: #c3cdb6;
+  border: 3px solid var(--icq7-panel);
+  border-radius: 6px;
+}
+
+:root[data-skin='icq78'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--icq7-green);
+}
+
+/* ---------------------------------------------------------------------------
+   Preferences and the unencrypted notice
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-pref {
+  background: #f7f8f4;
+}
+
+:root[data-skin='icq78'] .icq-pref-tabs {
+  background: #fff;
+  border: 1px solid #d5dacb;
+  box-shadow: none;
+}
+
+:root[data-skin='icq78'] .icq-pref-tab[data-active='true'] {
+  background: linear-gradient(180deg, var(--icq7-select-top) 0%, var(--icq7-select-bottom) 100%);
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] input[type='checkbox'],
+:root[data-skin='icq78'] input[type='radio'] {
+  accent-color: var(--icq7-green);
+}
+
+/* Still the one element allowed to shout. */
+:root[data-skin='icq78'] .icq-insecure-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  background: #fff4e5;
+  border: 1px solid #d97706;
+  color: #7c2d12;
+  font-size: var(--icq7-font-size-status);
+}

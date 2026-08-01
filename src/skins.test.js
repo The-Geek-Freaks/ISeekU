@@ -56,10 +56,27 @@ describe('skin registry', () => {
     }
   });
 
-  test('default skins hide avatars in the contact list', () => {
+  test('every skin decides for itself whether the contact list shows avatars', () => {
+    // This used to assert 'none' for every skin, on the grounds that authentic
+    // ICQ showed avatars only in the chat window. That is true of the classic
+    // era and demonstrably false of ICQ 7, whose own product screenshot shows
+    // a photograph in every contact row — it was one of the defining changes
+    // of that era. The invariant is that a skin states its choice, so switching
+    // skins never inherits the previous one's.
     for (const skin of SKINS) {
+      expect(['none', 'flex']).toContain(skin.vars['--icq-list-avatar-display']);
+    }
+  });
+
+  test('the classic-era skins hide avatars, as the client did', () => {
+    for (const id of ['icq99', 'retro-teal', 'icq-green', 'msn-blue']) {
+      const skin = SKINS.find((s) => s.id === id);
       expect(skin.vars['--icq-list-avatar-display']).toBe('none');
     }
+  });
+
+  test('the ICQ 7 skin shows them, as that client did', () => {
+    expect(SKINS.find((s) => s.id === 'icq78').vars['--icq-list-avatar-display']).toBe('flex');
   });
 });
 

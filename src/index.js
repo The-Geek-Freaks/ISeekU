@@ -6,6 +6,7 @@ import './themes.css';
 // absence of rounded corners cannot be expressed as CSS variables, so it ships
 // as a stylesheet keyed off the data-skin attribute applySkin() sets.
 import './skins/icq99.css';
+import './skins/icq78.css';
 import App from './App';
 import ChatApp from './ChatApp';
 import { applySavedSkin, applySkin } from './skins';

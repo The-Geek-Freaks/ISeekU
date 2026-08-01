@@ -335,8 +335,15 @@ function createCall({
   }
 
   function receiveReject(msg) {
-    if (state !== 'offering' && state !== 'ringing') {
-      return err(`Received a reject in state "${state}"; it only makes sense while offering or ringing.`);
+    // Only a caller can receive a reject: the callee sends reject, and the caller
+    // is in "offering" state. A machine in "ringing" is the callee — the caller
+    // sends hangup to cancel, never a reject directed at the callee. Allowing
+    // "ringing" here would silently terminate the winning leg of a glare
+    // resolution when the winner's glare-reject message (for the loser's
+    // abandoned offer) reaches the loser's state machine after it has already
+    // transitioned to ringing.
+    if (state !== 'offering') {
+      return err(`Received a reject in state "${state}"; it only makes sense while offering.`);
     }
     const reason = msg.reason === 'busy' ? END_REASONS.busy : END_REASONS.rejected;
     return endCall(reason, []);

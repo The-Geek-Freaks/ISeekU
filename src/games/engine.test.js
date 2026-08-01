@@ -253,6 +253,28 @@ describe('resign', () => {
     expect(result.error).toBeTruthy();
   });
 
+  it('rejects a second resignation on an already-resigned session', () => {
+    const { session: s } = resign(freshTTT(), UIN_SMALL);
+    const result = resign(s, UIN_LARGE);
+    expect(result.error).toBeTruthy();
+    expect(result.session).toBeUndefined();
+  });
+
+  it('rejects resignation after the game ended naturally', () => {
+    // player1 wins top row, then player2 tries to resign — that path is
+    // distinct from double-resignation and exercises session.state.result check.
+    let s = freshTTT();
+    ({ session: s } = applyMove(s, { cell: 0 }, UIN_SMALL));
+    ({ session: s } = applyMove(s, { cell: 3 }, UIN_LARGE));
+    ({ session: s } = applyMove(s, { cell: 1 }, UIN_SMALL));
+    ({ session: s } = applyMove(s, { cell: 4 }, UIN_LARGE));
+    ({ session: s } = applyMove(s, { cell: 2 }, UIN_SMALL)); // p1 wins
+    expect(s.state.result).toBe('player1');
+    const result = resign(s, UIN_LARGE);
+    expect(result.error).toBeTruthy();
+    expect(result.session).toBeUndefined();
+  });
+
   it('does not mutate the original session', () => {
     const s = freshTTT();
     resign(s, UIN_SMALL);

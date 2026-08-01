@@ -58,22 +58,41 @@ twenty years ago load, and the README sells all of it properly.
 
 <!-- one line per ticket; detail in PLAN/tickets/ -->
 
-- [Chat formatting toolbar](tickets/formatting.md) — StyledBody built and
-  tested but never wired into ChatWindow; no B/I/S/M buttons.
-- [Appearance preferences](tickets/appearance.md) — font, size, colour and
-  chat background, local rendering only.
-- [Peer capability discovery](tickets/capabilities.md) — XEP-0115, so a
-  Contact running ISeekU is recognised and peer features unlock.
-- [P2P file transfer](tickets/transfer.md) — no size limit, over WebRTC data
-  channels.
-- [Audio and video calls](tickets/calls.md) — direct, not relayed through
-  icqr.net.
-- [Games against a Contact](tickets/games.md) — reimplemented, not the
-  original Flash.
-- [ICQ 6.5 and 7.x skin import](tickets/boxely-skins.md) — skins live inside
-  Inno Setup and NSIS installers, Boxely XML+CSS within.
-- [README at 12/10](tickets/readme.md) — hero graphics, SVGs, every feature
-  shown. The last ticket, deliberately: it can only sell what exists.
+- **WebRTC transport** — the one thing standing between the finished transfer
+  and call protocols and a working feature. Needs a decision on
+  `node-datachannel` (a native dependency, N-API 8 so ABI-stable across Node
+  releases) versus doing it in a renderer process where WebRTC already exists.
+- **Signalling over XMPP** — carrying the offer/answer/candidate shapes the
+  two protocols define as custom elements through `electron/icq/client.js`.
+  Blocked on nothing; it just follows the transport decision.
+- **Game surfaces** — rules and turn protocol are done and tested; they need a
+  board to be played on and a way to invite a Contact.
+- **Contact context menu** — the original had Send/Launch/User sections with
+  per-Contact Alert and Accept modes. Needs measuring against the screenshots
+  in `ORIGINAL-REFERENCE.md` before it can be built faithfully.
+
+## Decisions made this round
+
+- **Chat formatting** — XEP-0393, wired through `StyledBody`, with a toolbar
+  that preserves the composer's selection via `onMouseDown`/`preventDefault`
+  (a click would blur the textarea and wipe the selection first).
+- **Appearance** — local rendering only, stated in the interface. Fixed font
+  list rather than system enumeration: enumeration is a fingerprinting
+  surface, and offering a font the recipient lacks is a promise the client
+  cannot keep. Backgrounds are gradients, never image paths.
+- **Peer discovery** — XEP-0115 with the spec's worked example as a fixture,
+  cache keyed by recomputed hash so a Contact cannot plant capabilities.
+- **File transfer / calls** — protocols and state machines complete and tested,
+  including glare resolution that is symmetric across both ends. Transport
+  deliberately separate.
+- **Games** — Tic-Tac-Toe and Quatro, reimplemented. Opponent moves are
+  untrusted and re-checked locally; position reproducible from the move list.
+- **ICQ 6.5 / 7 skins** — Boxely XML, read from an unpacked package rather
+  than the Inno Setup installer, since requiring `innoextract` of every user
+  is not reasonable. 6/6 real skins import.
+- **README** — hero in SVG with the flower at its measured colours and the two
+  eras drawn as miniature windows, rendered and checked in a fallback font
+  because GitHub uses the reader's own.
 
 ## Not yet specified
 

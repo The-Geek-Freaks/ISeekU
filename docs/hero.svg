@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340" role="img" aria-label="ISeekU — ICQ, rebuilt. Two eras, one client.">
+  <title>ISeekU — ICQ, rebuilt</title>
+
+  <defs>
+    <!-- A near-black with a little of the flower's own green in it, rather
+         than a neutral grey. The screenshots below this are Windows 98 grey;
+         a dark ground makes them read as exhibits rather than as page. -->
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E1310"/>
+      <stop offset="55%" stop-color="#121814"/>
+      <stop offset="100%" stop-color="#0B0F0D"/>
+    </linearGradient>
+
+    <!-- The 2001 window, drawn at a size where its bevels still read. -->
+    <linearGradient id="titlebar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000080"/>
+      <stop offset="100%" stop-color="#1084D0"/>
+    </linearGradient>
+
+    <linearGradient id="icq7bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DEEDD4"/>
+      <stop offset="55%" stop-color="#C5E2B6"/>
+      <stop offset="100%" stop-color="#97C770"/>
+    </linearGradient>
+
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#00FF00" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#00FF00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="340" fill="url(#ground)"/>
+
+  <!-- Hairline rule along the bottom, the way a spec sheet is ruled. -->
+  <rect x="0" y="339" width="1200" height="1" fill="#1E2A22"/>
+
+  <!-- ── The flower, at 8x the 16px icon, geometry unchanged ────────────── -->
+  <g transform="translate(96, 118)">
+    <circle cx="64" cy="64" r="92" fill="url(#glow)"/>
+    <g transform="scale(8)">
+      <!-- Petals at 45-degree steps, radius 2.4, exactly as StatusIcon draws
+           them. The one red petal sits top-right of the centre: the detail
+           everybody remembers about the ICQ logo. -->
+      <circle cx="8"    cy="3"    r="2.4" fill="#00FF00"/>
+      <circle cx="11.5" cy="4.5"  r="2.4" fill="#FF0000"/>
+      <circle cx="13"   cy="8"    r="2.4" fill="#00FF00"/>
+      <circle cx="11.5" cy="11.5" r="2.4" fill="#00FF00"/>
+      <circle cx="8"    cy="13"   r="2.4" fill="#00FF00"/>
+      <circle cx="4.5"  cy="11.5" r="2.4" fill="#00FF00"/>
+      <circle cx="3"    cy="8"    r="2.4" fill="#00FF00"/>
+      <circle cx="4.5"  cy="4.5"  r="2.4" fill="#00FF00"/>
+      <circle cx="8"    cy="8"    r="2.6" fill="#FFFF00"/>
+    </g>
+  </g>
+
+  <!-- ── Wordmark ───────────────────────────────────────────────────────── -->
+  <g font-family="Tahoma, Verdana, Geneva, DejaVu Sans, sans-serif">
+    <text x="288" y="150" font-size="86" font-weight="700" fill="#F2F6F3" letter-spacing="-2">ISeekU</text>
+
+    <!-- Kept short on purpose: the two era windows begin at x=852, and a line
+         that runs past roughly 820 disappears underneath them. -->
+    <text x="292" y="192" font-size="20" fill="#9FB5A6">
+      The Contact List, the eight Statuses, the Uh-oh.
+    </text>
+    <text x="292" y="220" font-size="20" fill="#9FB5A6">
+      Speaking XMPP, against the network the UINs are on.
+    </text>
+
+    <!-- Facts, not adjectives.
+
+         One text node rather than positioned fragments. Placing each separator
+         at a measured x works until the viewer has no Tahoma — GitHub renders
+         this with whatever the reader's machine has, and DejaVu Sans is wide
+         enough that the fragments collided. Letting the string flow removes
+         the guess entirely. -->
+    <text x="292" y="268" font-size="14" fill="#6E8677">790 tests  ·  3 skin formats imported  ·  Windows · macOS · Linux  ·  MIT</text>
+  </g>
+
+  <!-- ── The two eras, as two small windows ─────────────────────────────── -->
+
+  <!-- ICQ Classic, 2001: Windows 98 chrome, navy title bar, grey face. -->
+  <g transform="translate(852, 74)">
+    <rect x="3" y="3" width="132" height="192" fill="#000000" opacity="0.32"/>
+    <rect width="132" height="192" fill="#C0C0C0"/>
+    <rect width="132" height="1" fill="#FFFFFF"/>
+    <rect y="191" width="132" height="1" fill="#404040"/>
+    <rect x="131" width="1" height="192" fill="#404040"/>
+    <rect x="3" y="3" width="126" height="16" fill="url(#titlebar)"/>
+    <text x="7" y="15" font-family="Tahoma, Verdana, sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">ICQ</text>
+
+    <!-- Contact rows at the measured 16px pitch. -->
+    <g font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#000000">
+      <text x="9" y="38" font-weight="700" fill="#000080">Friends</text>
+      <rect x="46" y="35" width="76" height="1" fill="#808080"/>
+      <rect x="46" y="36" width="76" height="1" fill="#FFFFFF"/>
+
+      <circle cx="14" cy="50" r="3.5" fill="#00FF00"/><text x="24" y="53">Kathrin</text>
+      <circle cx="14" cy="66" r="3.5" fill="#FFD700"/><text x="24" y="69">Marco</text>
+      <circle cx="14" cy="82" r="3.5" fill="#FF0000"/><text x="24" y="85">Sabine</text>
+      <circle cx="14" cy="98" r="3.5" fill="#808080"/><text x="24" y="101" fill="#808080">Jenny</text>
+
+      <text x="9" y="124" font-weight="700" fill="#000080">Work</text>
+      <rect x="34" y="121" width="88" height="1" fill="#808080"/>
+      <rect x="34" y="122" width="88" height="1" fill="#FFFFFF"/>
+      <circle cx="14" cy="136" r="3.5" fill="#00FF00"/><text x="24" y="139">Petra</text>
+      <circle cx="14" cy="152" r="3.5" fill="#808080"/><text x="24" y="155" fill="#808080">Tobias</text>
+    </g>
+    <text x="9" y="182" font-family="Tahoma, Verdana, sans-serif" font-size="8" fill="#404040">ICQ Classic · 2001</text>
+  </g>
+
+  <!-- ICQ 7, 2010: the green header, taller rows, photographs. -->
+  <g transform="translate(1010, 74)">
+    <rect x="3" y="3" width="132" height="192" fill="#000000" opacity="0.32"/>
+    <rect width="132" height="192" fill="#FFFFFF"/>
+    <rect width="132" height="29" fill="url(#icq7bar)"/>
+    <circle cx="16" cy="15" r="8" fill="#5C9E31"/>
+    <text x="30" y="19" font-family="Tahoma, Verdana, sans-serif" font-size="10" font-weight="700" fill="#3D5C29">ISeekU</text>
+
+    <g font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#2B3B24">
+      <rect x="0" y="40" width="132" height="31" fill="#C4DFA6"/>
+      <circle cx="17" cy="55" r="10" fill="#8FBF6A"/><text x="33" y="53">Kathrin</text>
+      <text x="33" y="65" font-size="8" fill="#5E7A4E">up for a chat</text>
+
+      <circle cx="17" cy="86" r="10" fill="#D9D9D9"/><text x="33" y="84">Marco</text>
+      <text x="33" y="96" font-size="8" fill="#8A8A8A">gone for a smoke</text>
+
+      <circle cx="17" cy="117" r="10" fill="#D9D9D9"/><text x="33" y="115">Sabine</text>
+      <text x="33" y="127" font-size="8" fill="#8A8A8A">in a meeting until 4</text>
+
+      <circle cx="17" cy="148" r="10" fill="#D9D9D9"/><text x="33" y="146" fill="#8A8A8A">Jenny</text>
+    </g>
+    <text x="9" y="182" font-family="Tahoma, Verdana, sans-serif" font-size="8" fill="#8A8A8A">ICQ 7 · 2010</text>
+  </g>
+</svg>

@@ -406,86 +406,77 @@ describe('Quatro win conditions', () => {
 
 describe('Quatro draw', () => {
   it('reports a draw when all 42 cells are filled with no winner', () => {
-    // Fill the board column by column with alternating pieces in a pattern that
-    // avoids any four-in-a-row. The pattern below was verified by hand:
-    // columns filled in order 0-6, each column with an alternating P1/P2 stack,
-    // but shifting the starting player so no vertical run of 4 forms and no
-    // horizontal run of 4 forms across the bottom.
+    // The column order [0,2,4,6,1,3,5] repeated six times fills a 6×7 board
+    // with no four-in-a-row at any point during play. Each round of seven moves
+    // fills one row from bottom to top; the non-sequential column order breaks
+    // the diagonals that the naive sequential fill (0,1,2,…) would assemble.
     //
-    // Simplest provably-draw pattern: use a known sequence where neither player
-    // gets 4 in a row. We construct this by filling columns in a specific order
-    // with a specific piece assignment, then assert no winner.
-    //
-    // The test verifies that the draw detection fires correctly, not that any
-    // particular sequence is the only draw.
-
-    // A known full-board draw sequence for a 6x7 board:
-    // Each pair (p1col, p2col) is one round of moves.
-    const rounds = [
-      [0, 1], [2, 3], [4, 5], [6, 0], [1, 2],
-      [3, 4], [5, 6], [0, 1], [2, 3], [4, 5],
-      [6, 0], [1, 2], [3, 4], [5, 6], [0, 1],
-      [2, 3], [4, 5], [6, 0], [1, 2], [3, 4],
-      [5, 6],
-    ];
+    // Worked out by tracing every diagonal window at each layer boundary:
+    // within a layer the maximum run in any direction is two; between layers
+    // the pattern alternates, so adjacent layers never align to form four.
+    // The final board is a two-column-period stripe (P1 P1 P2 P2 P1 P1 P2
+    // per row, shifted by one each row), which has no run of four.
+    const colOrder = [0, 2, 4, 6, 1, 3, 5];
+    const moves = [];
+    for (let round = 0; round < 6; round++) {
+      for (const col of colOrder) moves.push({ col });
+    }
 
     let s = QUATRO.initialState();
-    for (const [p1col, p2col] of rounds) {
-      // Skip if the column is full (the pattern may repeat columns).
-      if (QUATRO.isLegal(s, { col: p1col }) && s.result === null) {
-        s = QUATRO.applyMove(s, { col: p1col });
-      }
-      if (QUATRO.isLegal(s, { col: p2col }) && s.result === null) {
-        s = QUATRO.applyMove(s, { col: p2col });
-      }
-    }
+    for (const m of moves) s = QUATRO.applyMove(s, m);
 
-    // If the simple round-robin hits a winner before filling the board, that is
-    // also fine — the test then just asserts the result is non-null, which is
-    // still correct behaviour. The important thing is that the result field is
-    // set when the board is full.
-    expect(s.result).not.toBe(null);
+    expect(s.board.flat().every((c) => c !== null)).toBe(true);
+    expect(s.result).toBe('draw');
   });
 
-  it('records a draw result when the top row is completely filled and no one won', () => {
-    // Build a state directly: manually construct a full board with no winner.
-    // Pattern (P1=player1, P2=player2):
-    //  row 0: P1 P2 P1 P2 P1 P2 P1
-    //  row 1: P2 P1 P2 P1 P2 P1 P2
-    //  row 2: P1 P2 P1 P2 P1 P2 P1
-    //  row 3: P2 P1 P2 P1 P2 P1 P2
-    //  row 4: P1 P2 P1 P2 P1 P2 P1
-    //  row 5: P2 P1 P2 P1 P2 P1 P2
-    // This checkerboard is full and has no run of 4 in any direction.
+  it('the alternating-stripe board has no run of four in any direction — structural proof', () => {
+    // This test does not drive the engine; it proves that the board reached
+    // by the draw test above has no four-in-a-row in any direction, which
+    // explains why the engine must return 'draw' rather than a winner.
+    // The pattern produced by the [0,2,4,6,1,3,5]×6 sequence is:
+    //   odd rows  (rows 1,3,5 from top): P1 P1 P2 P2 P1 P1 P2
+    //   even rows (rows 0,2,4 from top): P2 P2 P1 P1 P2 P2 P1
     const P1 = 'player1';
     const P2 = 'player2';
-    const board = Array.from({ length: 6 }, (_, r) =>
-      Array.from({ length: 7 }, (__, c) => ((r + c) % 2 === 0 ? P1 : P2))
+    // Rows 0,2,4 (even r from top) start with P2; rows 1,3,5 start with P1.
+    const rowPattern = (r) => [P2, P2, P1, P1, P2, P2, P1].map(
+      (v) => (r % 2 === 0) ? v : (v === P1 ? P2 : P1)
     );
+    const board = Array.from({ length: 6 }, (_, r) => rowPattern(r));
 
-    // Drive the result computation by calling applyMove on a near-full board.
-    // We reconstruct the last state by building the board from scratch.
-    // Since we can't inject a state directly (the game logic owns state shape),
-    // verify the checker separately: a full board with no run of 4 is a draw.
-    // The isLegal/applyMove path is covered by the other tests.
-
-    // Verify the checkerboard has no horizontal, vertical, or diagonal run of 4.
-    // Horizontal: in any row, the colours alternate, so no 2 adjacent match.
+    // Horizontal: maximum run per row is two.
     for (let r = 0; r < 6; r++) {
-      for (let c = 0; c < 4; c++) {
-        const same = board[r][c] === board[r][c+1]
+      for (let c = 0; c <= 3; c++) {
+        const run4 = board[r][c] === board[r][c+1]
                   && board[r][c+1] === board[r][c+2]
                   && board[r][c+2] === board[r][c+3];
-        expect(same).toBe(false);
+        expect(run4).toBe(false);
       }
     }
-    // Vertical: same argument — adjacent cells in a column differ.
-    for (let r = 0; r < 3; r++) {
+    // Vertical: adjacent rows are complements, so no two consecutive cells
+    // in a column share a colour, let alone four.
+    for (let r = 0; r <= 2; r++) {
       for (let c = 0; c < 7; c++) {
-        const same = board[r][c] === board[r+1][c]
+        const run4 = board[r][c] === board[r+1][c]
                   && board[r+1][c] === board[r+2][c]
                   && board[r+2][c] === board[r+3][c];
-        expect(same).toBe(false);
+        expect(run4).toBe(false);
+      }
+    }
+    // Diagonal down-right and down-left: four cells span two rows with
+    // complementary patterns, guaranteeing at least one break.
+    for (let r = 0; r <= 2; r++) {
+      for (let c = 0; c <= 3; c++) {
+        const dr = board[r][c] === board[r+1][c+1]
+                && board[r+1][c+1] === board[r+2][c+2]
+                && board[r+2][c+2] === board[r+3][c+3];
+        expect(dr).toBe(false);
+      }
+      for (let c = 3; c < 7; c++) {
+        const dl = board[r][c] === board[r+1][c-1]
+                && board[r+1][c-1] === board[r+2][c-2]
+                && board[r+2][c-2] === board[r+3][c-3];
+        expect(dl).toBe(false);
       }
     }
   });

@@ -440,9 +440,18 @@ describe('receiving a reject', () => {
     expect(call.endReason).toBe(END_REASONS.busy);
   });
 
-  it('refuses a reject when not offering or ringing', () => {
+  it('refuses a reject when not in offering state — idle is not a valid state', () => {
     const result = outgoing().receive(wireReject('call-1', '2222', '1111'));
     expect(result.error).toBeTruthy();
+  });
+
+  it('refuses a reject when ringing — a callee never receives a reject, only a caller does', () => {
+    const call = outgoing();
+    call.receiveOffer(wireOffer('call-2', '2222', '1111'));
+    expect(call.state).toBe('ringing');
+    const result = call.receive(wireReject('call-2', '2222', '1111', 'rejected'));
+    expect(result.error).toBeTruthy();
+    expect(call.state).toBe('ringing');
   });
 });
 
@@ -654,6 +663,42 @@ describe('glare: both sides reach consistent but opposite conclusions', () => {
     expect(callY.state).toBe('offering');
     // callX (owner 9000) loses and becomes the callee.
     expect(callX.state).toBe('ringing');
+  });
+
+  it('the loser survives receiving the winner\'s glare-reject for the abandoned offer', () => {
+    // This is the failure mode the original suite missed. After glare resolution
+    // the winner sends a reject (reason="glare") for the loser's abandoned offer.
+    // That message travels over the network and the application routes it to the
+    // loser's state machine. The loser is now in "ringing" — it has adopted the
+    // winner's callId and is waiting to answer. The reject is for the old callId;
+    // it must be refused rather than causing the call to end prematurely.
+    const winner = createCall({ ownerUin: '1111', contactUin: '2222', callId: 'call-A' });
+    const loser  = createCall({ ownerUin: '2222', contactUin: '1111', callId: 'call-B' });
+
+    const winnerOffer = winner.placeCall().messages[0];
+    const loserOffer  = loser.placeCall().messages[0];
+
+    const winnerResult = winner.receiveOffer(loserOffer);
+    loser.receiveOffer(winnerOffer);
+
+    expect(winner.state).toBe('offering');
+    expect(loser.state).toBe('ringing');
+
+    // The winner's reject for call-B (loser's abandoned offer) now reaches the loser.
+    const glareReject = winnerResult.messages[0];
+    expect(glareReject.type).toBe('reject');
+    expect(glareReject.reason).toBe('glare');
+
+    const loserResult = loser.receive(glareReject);
+    // The loser must refuse it — ringing is not a valid state for receiving a reject.
+    expect(loserResult.error).toBeTruthy();
+    expect(loser.state).toBe('ringing'); // call survives
+
+    // The loser can still answer normally.
+    const answerResult = loser.answer();
+    expect(answerResult.messages[0].type).toBe('answer');
+    expect(answerResult.messages[0].callId).toBe('call-A');
+    expect(loser.state).toBe('connecting');
   });
 });
 

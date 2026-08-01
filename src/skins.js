@@ -208,14 +208,49 @@ export const SKINS = [
 
 const DEFAULT_SKIN_ID = 'icq78';
 
+// Themes the Owner dropped into <userData>/themes/. Loaded once at start
+// through registerThemes(); the main process validates them first, because a
+// theme file is untrusted input that ends up in this stylesheet — see
+// electron/lib/icq-theme.js.
+let customSkins = [];
+
+/**
+ * Replace the set of installed themes. Built-ins win on an id collision, so a
+ * theme file cannot take over the skin somebody is currently using.
+ */
+export function registerThemes(themes) {
+  const taken = new Set(SKINS.map(s => s.id));
+  customSkins = (themes || []).filter(t => {
+    if (!t || !t.id || taken.has(t.id)) return false;
+    taken.add(t.id);
+    return true;
+  });
+  return customSkins;
+}
+
+/** Every skin the Owner can choose: shipped ones first, then their own. */
+export function allSkins() {
+  return [...SKINS, ...customSkins];
+}
+
+/** Fetch and register the installed themes. Safe to call when there are none. */
+export async function loadThemes() {
+  try {
+    const themes = await window.api?.icq?.getThemes?.();
+    return registerThemes(themes);
+  } catch {
+    return registerThemes([]);
+  }
+}
+
 export function getSkin(id) {
-  return SKINS.find(s => s.id === id) || SKINS[0];
+  return allSkins().find(s => s.id === id) || SKINS[0];
 }
 
 export function getSavedSkinId() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved && SKINS.some(s => s.id === saved)) return saved;
+    if (saved && allSkins().some(s => s.id === saved)) return saved;
   } catch (e) {}
   return DEFAULT_SKIN_ID;
 }

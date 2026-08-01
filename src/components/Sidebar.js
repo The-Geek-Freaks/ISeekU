@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './Sidebar.css';
-import { SKINS, setSkin, getSavedSkinId } from '../skins';
+import { SKINS, allSkins, loadThemes, setSkin, getSavedSkinId } from '../skins';
 import StatusIcon from './icq/StatusIcon';
 import IcqContactList from './icq/IcqContactList';
 import StatusMenu from './icq/StatusMenu';
@@ -205,6 +205,10 @@ export default function Sidebar({
   const [showSkinMenu, setShowSkinMenu] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
+  // Themes the Owner installed. Loaded once; until they arrive the list is
+  // just the built-in skins, which is the correct thing to show meanwhile.
+  const [skinList, setSkinList] = useState(SKINS);
+  useEffect(() => { loadThemes().then(() => setSkinList(allSkins())); }, []);
   const [skinId, setSkinId] = useState(() => getSavedSkinId());
   const skinBtnRef = useRef(null);
   const skinMenuRef = useRef(null);
@@ -464,7 +468,7 @@ export default function Sidebar({
             ownStatus={ownStatus}
             soundEnabled={soundEnabled}
             onToggleSound={onToggleSound}
-            skins={SKINS}
+            skins={skinList}
             currentSkin={skinId}
             onChooseSkin={chooseSkin}
             games={GAMES}
@@ -479,7 +483,7 @@ export default function Sidebar({
 
       {showPreferences && (
         <Preferences
-          skins={SKINS}
+          skins={skinList}
           currentSkin={skinId}
           onChooseSkin={chooseSkin}
           contactScale={contactScale}

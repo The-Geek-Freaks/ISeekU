@@ -585,6 +585,52 @@ ipcMain.handle('icq:set-alert',      async (e, jid, on)        => icqBridge.setA
 ipcMain.handle('icq:search-history', async (e, query, opts)    => icqBridge.searchHistory(query, opts));
 ipcMain.handle('icq:server-features', async ()                 => [...(icqBridge.serverFeatures || [])]);
 
+// -- Themes ---------------------------------------------------
+// A theme is a JSON file with the same shape as a built-in skin, dropped into
+// <userData>/themes/. It is untrusted input that ends up in the renderer's
+// stylesheet, so every value goes through electron/lib/icq-theme.js first --
+// see the note there about why a CSS value is not inert.
+function loadThemes() {
+  if (!appDataDir) return [];
+  const dir = path.join(appDataDir, 'themes');
+  let entries;
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return []; // No themes directory is the normal case, not an error.
+  }
+  const { toSkin } = require('./lib/icq-theme');
+  const themes = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.toLowerCase().endsWith('.json')) continue;
+    try {
+      const raw = fs.readFileSync(path.join(dir, entry.name), 'utf8');
+      const { skin, error, warnings } = toSkin(JSON.parse(raw), { source: entry.name });
+      if (error) { logStartup('Theme ' + entry.name + ' refused: ' + error); continue; }
+      // Warnings mean the theme loaded with parts dropped. Worth logging so
+      // whoever wrote it can find out which parts.
+      for (const w of warnings || []) logStartup('Theme ' + entry.name + ': ' + w);
+      themes.push(skin);
+    } catch (e) {
+      logStartup('Theme ' + entry.name + ' could not be read', e);
+    }
+  }
+  return themes;
+}
+
+ipcMain.handle('icq:get-themes', async () => loadThemes());
+ipcMain.handle('icq:open-themes-dir', async () => {
+  if (!appDataDir) return false;
+  const dir = path.join(appDataDir, 'themes');
+  try {
+    fs.mkdirSync(dir, { recursive: true });
+    shell.openPath(dir);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
 // ── IPC: Window controls ──────────────────────────────────────
 ipcMain.on('window:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize());
 ipcMain.on('window:maximize', (e) => {

@@ -138,6 +138,10 @@ contextBridge.exposeInMainWorld('api', {
     setAlert:     (jid, on)          => ipcRenderer.invoke('icq:set-alert', jid, on),
     searchHistory:(query, opts)      => ipcRenderer.invoke('icq:search-history', query, opts),
     serverFeatures: ()               => ipcRenderer.invoke('icq:server-features'),
+    // Themes the Owner installed. Validated in the main process before they
+    // get here — see electron/lib/icq-theme.js.
+    getThemes:    ()                 => ipcRenderer.invoke('icq:get-themes'),
+    openThemesFolder: ()             => ipcRenderer.invoke('icq:open-themes-dir'),
     // Every listener returns its own unsubscribe, so a chat window that closes
     // does not leave a handler behind for the next one to double-fire on.
     onReady:      (cb) => subscribe('icq:ready', cb),

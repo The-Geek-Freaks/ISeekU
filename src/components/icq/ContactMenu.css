@@ -1,0 +1,138 @@
+/* The Contact right-click context menu.
+
+   Positioned by the component via a React portal rather than relatively inside
+   the Contact List — which is why the CSS uses fixed coordinates, not absolute
+   ones anchored to a parent. Skin-aware via --icq-* custom properties, with
+   skin-specific overrides for icq99 (Win98 chrome) and icq78 (rounded greens)
+   at the bottom of this file.
+
+   The three-section layout — Send, Launch, User — matches the verified
+   screenshot in docs/ORIGINAL-REFERENCE.md. Section labels are visual only and
+   not interactive; separators use the classic two-tone engraved groove. */
+
+.icq-cmenu {
+  min-width: 160px;
+  padding: 3px 0;
+  background: var(--icq-face, #ece9d8);
+  border: 1px solid;
+  border-color: var(--icq-highlight, #fff) var(--icq-dark-shadow, #716f64)
+    var(--icq-dark-shadow, #716f64) var(--icq-highlight, #fff);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, .35);
+  font-family: var(--icq-font, Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+  z-index: 1000;
+  user-select: none;
+}
+
+/* Section labels are visual grouping only. The capitalisation gives them
+   the look of a Win32 popup-menu section heading without implying they
+   do anything when clicked — which they do not. */
+.icq-cmenu-section {
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--icq-text-dim, #808080);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* Classic two-tone engraved groove. One dark line, one light line below it. */
+.icq-cmenu-sep {
+  height: 0;
+  margin: 2px 0;
+  border-top: 1px solid var(--icq-shadow, #aca899);
+  border-bottom: 1px solid var(--icq-highlight, #fff);
+}
+
+.icq-cmenu-item {
+  display: block;
+  width: 100%;
+  padding: 2px 6px 2px 16px;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--icq-text, #000);
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* Instant highlight, no transition — native menus paint instantly. */
+.icq-cmenu-item:hover:not(:disabled) {
+  background: var(--icq-selected-bg, #316ac5);
+  color: #fff;
+}
+
+.icq-cmenu-item:disabled {
+  color: var(--icq-text-dim, #808080);
+  cursor: default;
+}
+
+/* Delete is irreversible. A touch of red weight signals that before the click,
+   not after — the Win32 convention for destructive menu items. */
+.icq-cmenu-item--danger:not(:disabled) {
+  color: #800000;
+}
+
+.icq-cmenu-item--danger:hover:not(:disabled) {
+  background: #800000;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Skin: icq99 — Win98 hard edges, system colours
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-cmenu {
+  background: var(--win-face);
+  border-color: var(--win-highlight) var(--win-dark-shadow)
+    var(--win-dark-shadow) var(--win-highlight);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, .35);
+}
+
+:root[data-skin='icq99'] .icq-cmenu-sep {
+  border-top-color: var(--win-shadow);
+  border-bottom-color: var(--win-highlight);
+}
+
+:root[data-skin='icq99'] .icq-cmenu-item:hover:not(:disabled) {
+  background: var(--win-select);
+  color: var(--win-select-text);
+}
+
+/* Win32 engraved the label of a disabled control rather than just dimming it. */
+:root[data-skin='icq99'] .icq-cmenu-item:disabled {
+  color: var(--win-grey-text);
+  text-shadow: 1px 1px 0 var(--win-highlight);
+}
+
+/* ---------------------------------------------------------------------------
+   Skin: icq78 — rounded corners, white background, green accents
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-cmenu {
+  background: #fff;
+  border: 1px solid #c4c9bd;
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .22);
+}
+
+:root[data-skin='icq78'] .icq-cmenu-sep {
+  border-top-color: #e2e5dc;
+  border-bottom-color: transparent;
+}
+
+:root[data-skin='icq78'] .icq-cmenu-item {
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-cmenu-item:hover:not(:disabled) {
+  background: var(--icq7-hover);
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-cmenu-item:disabled {
+  color: var(--icq7-text-dim);
+  text-shadow: none;
+}

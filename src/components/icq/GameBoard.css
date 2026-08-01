@@ -1,0 +1,264 @@
+/* The in-window game board for Tic-Tac-Toe and Quatro.
+
+   Skin-aware via the --icq-* custom properties defined in the skin files.
+   The base values are the fallbacks when no skin variable is set: neutral
+   greys and the two player colours that read clearly on any background.
+
+   Skin-specific overrides follow at the bottom, scoped with :root[data-skin].
+   The icq99 skin gets hard Win98 edges; the icq78 skin gets rounded corners
+   and pastel greens. The board layout stays the same under both. */
+
+/* ---------------------------------------------------------------------------
+   Container
+   ------------------------------------------------------------------------ */
+
+.icq-gameboard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  background: var(--icq-face, #ece9d8);
+  font-family: var(--icq-font, Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+}
+
+.icq-gameboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 2px;
+}
+
+.icq-gameboard-title {
+  font-weight: bold;
+}
+
+.icq-gameboard-vs {
+  font-weight: normal;
+  color: var(--icq-text-dim, #808080);
+}
+
+/* The status line lives under the header and stays reserved even when empty
+   so the board does not jump when a message appears. */
+.icq-gameboard-status {
+  min-height: 1.3em;
+  color: var(--icq-text, #000);
+}
+
+.icq-gameboard-status--rejected {
+  color: #cc0000;
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+   Tic-Tac-Toe — a 3 × 3 grid of square buttons
+   ------------------------------------------------------------------------ */
+
+.icq-game-board--ttt {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  width: max-content;
+}
+
+.icq-game-cell {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: bold;
+  background: var(--icq-window, #fff);
+  border: 1px solid var(--icq-shadow, #aca899);
+  color: var(--icq-text, #000);
+  cursor: default;
+  /* No outline: focus is shown with the :focus-visible override below. */
+  outline: none;
+}
+
+/* The focus ring must be visible for keyboard players. Dotted is the
+   Win32/ARIA-standard appearance; a solid ring would suggest selection. */
+.icq-game-cell:focus-visible,
+.icq-game-cell:focus {
+  outline: 2px dotted var(--icq-text, #000);
+  outline-offset: -3px;
+  position: relative;
+  z-index: 1;
+}
+
+.icq-game-cell--player1 {
+  color: var(--icq-p1-colour, #cc0000);
+}
+
+.icq-game-cell--player2 {
+  color: var(--icq-p2-colour, #000080);
+}
+
+/* ---------------------------------------------------------------------------
+   Quatro — drop buttons across the top, then the piece grid
+   ------------------------------------------------------------------------ */
+
+.icq-game-board--quatro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.icq-game-drops {
+  display: flex;
+  gap: 2px;
+}
+
+/* The drop button is narrower than a game cell to match the piece below it. */
+.icq-game-drop {
+  width: 36px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  background: var(--icq-face, #ece9d8);
+  border: 1px solid var(--icq-shadow, #aca899);
+  cursor: default;
+  outline: none;
+  color: var(--icq-text, #000);
+}
+
+.icq-game-drop:focus-visible,
+.icq-game-drop:focus {
+  outline: 2px dotted var(--icq-text, #000);
+  outline-offset: -3px;
+}
+
+/* A full column: the button stays in the layout so column widths stay stable,
+   but it is dimmed so the player knows not to click it. */
+.icq-game-drop--full {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.icq-game-row {
+  display: flex;
+  gap: 2px;
+}
+
+/* Quatro pieces are circles — both the original and every Connect Four
+   variant used circular pieces, which is what gives the game its look. */
+.icq-game-piece {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--icq-window, #fff);
+  border: 1px solid var(--icq-shadow, #aca899);
+}
+
+.icq-game-piece--player1 {
+  background: var(--icq-p1-colour, #cc0000);
+  border-color: transparent;
+}
+
+.icq-game-piece--player2 {
+  background: var(--icq-p2-colour, #000080);
+  border-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Skin: icq99 — Win98 hard edges, system colours
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-gameboard {
+  background: var(--win-face);
+  color: var(--win-window-text);
+}
+
+:root[data-skin='icq99'] .icq-gameboard-status--rejected {
+  /* Win32 did not do italic for errors — a colour shift was enough. */
+  font-style: normal;
+  color: var(--icq-flower-red);
+}
+
+:root[data-skin='icq99'] .icq-game-cell {
+  background: var(--win-window);
+  border-color: var(--win-shadow);
+  color: var(--win-window-text);
+}
+
+/* Win32 dotted focus ring, with the same offset the button style uses. */
+:root[data-skin='icq99'] .icq-game-cell:focus-visible,
+:root[data-skin='icq99'] .icq-game-cell:focus {
+  outline: 1px dotted var(--win-window-text);
+  outline-offset: -4px;
+}
+
+:root[data-skin='icq99'] .icq-game-cell--player1 { color: var(--icq-flower-red); }
+:root[data-skin='icq99'] .icq-game-cell--player2 { color: var(--win-caption); }
+
+:root[data-skin='icq99'] .icq-game-drop {
+  background: var(--win-face);
+  border-color: var(--win-shadow);
+  color: var(--win-window-text);
+}
+
+:root[data-skin='icq99'] .icq-game-drop:focus-visible,
+:root[data-skin='icq99'] .icq-game-drop:focus {
+  outline: 1px dotted var(--win-window-text);
+  outline-offset: -4px;
+}
+
+:root[data-skin='icq99'] .icq-game-piece {
+  /* icq99 has no border-radius rule, so the !important global override in
+     icq99.css forces border-radius: 0 on everything. Pieces become squares.
+     That is closer to the original Windows 98 game rendering than circles. */
+  background: var(--win-window);
+  border-color: var(--win-shadow);
+}
+
+:root[data-skin='icq99'] .icq-game-piece--player1 {
+  background: var(--icq-flower-red);
+  border-color: transparent;
+}
+
+:root[data-skin='icq99'] .icq-game-piece--player2 {
+  background: var(--win-caption);
+  border-color: transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Skin: icq78 — rounded, pastel greens
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq78'] .icq-gameboard {
+  background: var(--icq7-bg);
+  color: var(--icq7-text);
+  font-family: var(--icq7-font);
+  font-size: var(--icq7-font-size);
+}
+
+:root[data-skin='icq78'] .icq-gameboard-vs {
+  color: var(--icq7-text-dim);
+}
+
+:root[data-skin='icq78'] .icq-game-cell {
+  border-radius: 4px;
+  border-color: #c4c9bd;
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-game-cell--player1 { color: #d94f00; }
+:root[data-skin='icq78'] .icq-game-cell--player2 { color: var(--icq7-green-dark); }
+
+:root[data-skin='icq78'] .icq-game-drop {
+  border-radius: 3px;
+  border-color: #c4c9bd;
+  background: var(--icq7-panel);
+  color: var(--icq7-text);
+}
+
+:root[data-skin='icq78'] .icq-game-piece {
+  border-color: transparent;
+  background: var(--icq7-panel);
+}
+
+:root[data-skin='icq78'] .icq-game-piece--player1 { background: #d94f00; }
+:root[data-skin='icq78'] .icq-game-piece--player2 { background: var(--icq7-green); }

@@ -17,7 +17,7 @@
   "homepage": ".",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheGeekFreaks/ISeekU.git"
+    "url": "https://github.com/The-Geek-Freaks/ISeekU.git"
   },
   "main": "electron/main.js",
   "scripts": {

@@ -13,6 +13,13 @@ export default function ChatApp({ chatId, chatName, service, isGroup }) {
   const latestTgMsgIdRef = React.useRef(0);
   const lastReadAtRef = React.useRef(0);
 
+  // The window title is what tells one chat window from another in the
+  // taskbar. The static title in index.html wins over the BrowserWindow
+  // option, so the renderer has to set it.
+  useEffect(() => {
+    document.title = chatName || chatId || 'ISeekU';
+  }, [chatName, chatId]);
+
   const markChatReadNow = React.useCallback(() => {
     if (!api || !chatId || !service) return;
     const now = Date.now();

@@ -38,7 +38,8 @@
     "download-chrome": "node scripts/download-chrome.js",
     "make-icon": "node scripts/make-icon.js",
     "screenshots": "playwright test e2e/screenshots.spec.js",
-    "demo": "node scripts/demo.js"
+    "demo": "node scripts/demo.js",
+    "check:transports": "node scripts/check-transports.js"
   },
   "dependencies": {
     "@xmpp/client": "^0.14.0",

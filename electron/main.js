@@ -600,12 +600,31 @@ function loadThemes() {
     return []; // No themes directory is the normal case, not an error.
   }
   const { toSkin } = require('./lib/icq-theme');
+  const { toTheme } = require('./lib/icq-skn');
   const themes = [];
   for (const entry of entries) {
-    if (!entry.isFile() || !entry.name.toLowerCase().endsWith('.json')) continue;
+    if (!entry.isFile()) continue;
+    const name = entry.name.toLowerCase();
+    const isJson = name.endsWith('.json');
+    // An ICQ Lite 5 skin from the old skin archives. It becomes the same shape
+    // as a hand-written theme and is then validated by the same code -- see
+    // lib/icq-skn.js for what does and does not survive the conversion.
+    const isSkn = name.endsWith('.skn');
+    if (!isJson && !isSkn) continue;
+
     try {
-      const raw = fs.readFileSync(path.join(dir, entry.name), 'utf8');
-      const { skin, error, warnings } = toSkin(JSON.parse(raw), { source: entry.name });
+      const file = path.join(dir, entry.name);
+      let data;
+      if (isSkn) {
+        const { theme, notes, error: sknError } = toTheme(fs.readFileSync(file), { filename: entry.name });
+        if (sknError) { logStartup('Skin ' + entry.name + ' refused: ' + sknError); continue; }
+        for (const n of notes || []) logStartup('Skin ' + entry.name + ': ' + n);
+        data = theme;
+      } else {
+        data = JSON.parse(fs.readFileSync(file, 'utf8'));
+      }
+
+      const { skin, error, warnings } = toSkin(data, { source: entry.name });
       if (error) { logStartup('Theme ' + entry.name + ' refused: ' + error); continue; }
       // Warnings mean the theme loaded with parts dropped. Worth logging so
       // whoever wrote it can find out which parts.

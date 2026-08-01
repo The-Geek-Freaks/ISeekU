@@ -11,6 +11,11 @@ export default function App() {
   const [icqStatus, setIcqStatus] = useState('disconnected');
   const [ownStatus, setOwnStatus] = useState('offline');
   const [ownStatusText, setOwnStatusText] = useState('');
+  const [awayMessage, setAwayMessage] = useState('');
+  // The connection details Preferences reports — server, UIN, whether it is
+  // encrypted. Kept here so the dialog reads one source rather than asking.
+  const [icqConnection, setIcqConnection] = useState(null);
+  const appVersion = process.env.REACT_APP_VERSION || '';
   const [waQR, setWaQR]         = useState(null);
   const [tgQR, setTgQR]         = useState(null);
   const [tg2FA, setTg2FA]       = useState(null);
@@ -236,12 +241,14 @@ export default function App() {
       // case our own Status is whatever it was left as — not 'offline'.
       if (s?.ownStatus) setOwnStatus(s.ownStatus);
       if (typeof s?.ownStatusText === 'string') setOwnStatusText(s.ownStatusText);
+      if (s) setIcqConnection(s);
     }).catch(() => {});
 
     const removeIcqStatus = api.icq?.onStatusChanged?.((s) => {
       setIcqStatus(s?.status || 'disconnected');
       if (s?.ownStatus) setOwnStatus(s.ownStatus);
       if (typeof s?.ownStatusText === 'string') setOwnStatusText(s.ownStatusText);
+      if (s) setIcqConnection(s);
     });
     const removeIcqReady = api.icq?.onReady?.(() => setIcqStatus('ready'));
     const removeIcqContacts = api.icq?.onContacts?.(() => {
@@ -447,6 +454,11 @@ export default function App() {
           icqStatus={icqStatus}
           ownStatus={ownStatus}
           ownStatusText={ownStatusText}
+          awayMessage={awayMessage}
+          onAwayMessage={(text) => { setAwayMessage(text); api?.icq?.setAwayMessage?.(text).catch(() => {}); }}
+          connection={icqConnection}
+          appVersion={appVersion}
+          onSetContactScale={setContactScale}
           onChangeOwnStatus={(status, text) => {
             // Show it at once; the bridge confirms through onStatusChanged.
             setOwnStatus(status); setOwnStatusText(text || '');

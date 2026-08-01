@@ -1,0 +1,168 @@
+/* The preferences window. A tabbed dialog with the pages down the left, which
+   is where ICQ put them and where people expect to find them. */
+
+.icq-pref-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* No dimming veil: a Win32 modal did not darken the desktop behind it. */
+  background: transparent;
+}
+
+.icq-pref {
+  width: 420px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  display: flex;
+  flex-direction: column;
+  background: var(--win-face, #c0c0c0);
+  font-family: var(--icq-font, 'MS Sans Serif', Tahoma, sans-serif);
+  font-size: var(--icq-font-size, 11px);
+  color: var(--win-window-text, #000);
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, .4);
+}
+
+.icq-pref-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+}
+
+/* --- the page list ------------------------------------------------------ */
+
+.icq-pref-tabs {
+  flex: 0 0 108px;
+  display: flex;
+  flex-direction: column;
+  background: var(--win-window, #fff);
+  border: 1px solid;
+  border-color: var(--win-shadow, #808080) var(--win-highlight, #fff) var(--win-highlight, #fff) var(--win-shadow, #808080);
+  box-shadow: inset 1px 1px 0 var(--win-dark-shadow, #000);
+  padding: 2px;
+}
+
+.icq-pref-tab {
+  height: 18px;
+  padding: 0 5px;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: default;
+}
+
+/* Instant, like a native list. */
+.icq-pref-tab[data-active='true'] {
+  background: var(--win-select, #000080);
+  color: var(--win-select-text, #fff);
+}
+
+.icq-pref-tab:focus-visible {
+  outline: 1px dotted currentColor;
+  outline-offset: -2px;
+}
+
+/* --- the page ----------------------------------------------------------- */
+
+.icq-pref-page {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 4px 2px 4px 4px;
+}
+
+.icq-pref-field {
+  margin-bottom: 8px;
+}
+
+.icq-pref-label {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: bold;
+}
+
+.icq-pref-control .icq-input {
+  width: 100%;
+}
+
+.icq-pref-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.icq-pref-row .icq-btn {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.icq-pref-number {
+  width: 56px;
+  text-align: right;
+}
+
+.icq-pref-textarea {
+  width: 100%;
+  height: auto;
+  resize: vertical;
+  font-family: var(--icq-font);
+  line-height: 14px;
+}
+
+.icq-pref-check-row {
+  margin-bottom: 6px;
+}
+
+.icq-pref-check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Sized to sit beside 11px text rather than the browser's 13px default. */
+.icq-pref-check input[type='checkbox'] {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  flex: 0 0 13px;
+}
+
+.icq-pref-hint,
+.icq-pref-note {
+  margin: 2px 0 0;
+  color: var(--win-grey-text, #808080);
+  line-height: 14px;
+}
+
+.icq-pref-note + .icq-pref-note {
+  margin-top: 6px;
+}
+
+.icq-pref-value {
+  color: var(--win-grey-text, #808080);
+}
+
+/* The unencrypted state is the one thing in this dialog allowed to shout. */
+.icq-pref-insecure {
+  display: inline-block;
+  padding: 1px 4px;
+  background: #ffe8e8;
+  border: 1px solid #cc0000;
+  color: #800000;
+}
+
+/* --- actions ------------------------------------------------------------ */
+
+.icq-pref-actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 0 6px 6px;
+}

@@ -525,6 +525,30 @@
   vertical-align: text-bottom;
 }
 
+/* Checkboxes and radios. The browser default is a rounded blue control that
+   belongs to 2020 and stands out badly against Win32 chrome. accent-color is
+   the one-property way to fix the fill without rebuilding the control. */
+:root[data-skin='icq99'] input[type='checkbox'],
+:root[data-skin='icq99'] input[type='radio'] {
+  accent-color: var(--win-select);
+}
+
+/* ---------------------------------------------------------------------------
+   Preferences
+
+   The dialog is wider than the Contact List window, so it is allowed to shrink
+   rather than overflow. ICQ opened preferences as its own top-level window,
+   which is the better answer and a larger change; until then it fits.
+   ------------------------------------------------------------------------ */
+
+:root[data-skin='icq99'] .icq-pref {
+  background: var(--win-face);
+}
+
+:root[data-skin='icq99'] .icq-pref-tabs {
+  flex-basis: 96px;
+}
+
 /* ---------------------------------------------------------------------------
    Status menu
    ------------------------------------------------------------------------ */

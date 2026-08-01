@@ -93,3 +93,14 @@ test('sign-in screen', async () => {
     test.skip(true, 'sign-in screen not reachable from this state');
   }
 });
+
+test('preferences', async () => {
+  // Reached the way a user reaches it: the flower button, then the menu entry.
+  const flower = win.locator('.icq-flower-btn');
+  if (!(await flower.count())) { test.skip(true, 'flower button not present'); return; }
+  await flower.click();
+  await win.getByRole('menuitem', { name: /Preferences/ }).click();
+  await expect(win.locator('.icq-pref')).toBeVisible();
+  await win.screenshot({ path: path.join(OUT, 'preferences.png') });
+  await win.keyboard.press('Escape');
+});

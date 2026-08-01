@@ -5,6 +5,7 @@ import StatusIcon from './icq/StatusIcon';
 import IcqContactList from './icq/IcqContactList';
 import StatusMenu from './icq/StatusMenu';
 import IcqMainMenu from './icq/IcqMainMenu';
+import Preferences from './icq/Preferences';
 
 const GAMES = [
   { id: '8ball', name: '8 Ball Pool',  icon: '🎱', url: 'https://bloob.io/de/8ballpool' },
@@ -179,6 +180,7 @@ export default function Sidebar({
   activeService, setActiveService,
   waStatus, tgStatus, icqStatus,
   ownStatus = 'offline', ownStatusText = '', onChangeOwnStatus,
+  awayMessage = '', onAwayMessage, connection, appVersion, onSetContactScale,
   chats, chatsLoading, avatarsEnabled, onSelectChat,
   loginPanel,
   myProfile,
@@ -202,6 +204,7 @@ export default function Sidebar({
   const gameMenuRef = useRef(null);
   const [showSkinMenu, setShowSkinMenu] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
   const [skinId, setSkinId] = useState(() => getSavedSkinId());
   const skinBtnRef = useRef(null);
   const skinMenuRef = useRef(null);
@@ -469,8 +472,28 @@ export default function Sidebar({
             onIncreaseScale={onIncreaseContactScale}
             onDecreaseScale={onDecreaseContactScale}
             onSignOff={onLogout}
+            onPreferences={() => setShowPreferences(true)}
           />
         </div>
+      )}
+
+      {showPreferences && (
+        <Preferences
+          skins={SKINS}
+          currentSkin={skinId}
+          onChooseSkin={chooseSkin}
+          contactScale={contactScale}
+          onContactScale={onSetContactScale}
+          soundEnabled={soundEnabled}
+          onToggleSound={onToggleSound}
+          showOffline={icqShowOffline}
+          onShowOffline={setIcqShowOffline}
+          awayMessage={awayMessage}
+          onAwayMessage={onAwayMessage}
+          connection={connection}
+          appVersion={appVersion}
+          onClose={() => setShowPreferences(false)}
+        />
       )}
     </div>
   );

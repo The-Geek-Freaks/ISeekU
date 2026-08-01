@@ -117,10 +117,20 @@ try { telegramBridge = require('./telegram-bridge'); } catch (e) {
 // ── The ICQ account (XMPP) ────────────────────────────────────
 // The native transport, so unlike the other two it is always loaded: it holds
 // one socket and no browser, and costs nothing until someone signs in.
+// ICQ_DEMO=1 fills the account with a fixed, fictional Contact List and
+// conversation and marks it ready, without opening a socket. It is how the
+// README screenshots are produced and how the interface can be worked on
+// without signing in. It writes nothing to any real archive.
+const isDemo = process.env.ICQ_DEMO === '1';
+
 let icqBridge;
 try {
   const { IcqBridge } = require('./icq/bridge');
   icqBridge = new IcqBridge().init(appDataDir);
+  if (isDemo) {
+    require('./icq/demo-fixture').install(icqBridge);
+    logStartup('ICQ_DEMO — account populated from the fixture, no network');
+  }
 } catch (e) {
   console.error('[ICQ bridge load]', e.message);
   icqBridge = {

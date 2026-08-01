@@ -1,7 +1,7 @@
 {
   "name": "iseeku",
   "version": "2.0.0",
-  "description": "An authentic ICQ 5/6 client, speaking XMPP — with WhatsApp and Telegram as extra transports",
+  "description": "An authentic ICQ client speaking XMPP — compatible with the icqr.net network",
   "author": {
     "name": "Alex",
     "email": "Alexoland@web.de"
@@ -36,7 +36,9 @@
     "dist:nsis": "npm run download-chrome && npm run build && electron-builder --win nsis --publish never",
     "dist:store": "npm run build && electron-builder --win appx --publish never",
     "download-chrome": "node scripts/download-chrome.js",
-    "make-icon": "node scripts/make-icon.js"
+    "make-icon": "node scripts/make-icon.js",
+    "screenshots": "playwright test e2e/screenshots.spec.js",
+    "demo": "node scripts/demo.js"
   },
   "dependencies": {
     "@xmpp/client": "^0.14.0",
@@ -174,7 +176,7 @@
       ],
       "icon": "public/icon.png",
       "category": "Network;InstantMessaging",
-      "description": "An authentic ICQ 5/6 client, speaking XMPP",
+      "description": "An authentic ICQ client speaking XMPP",
       "extraResources": [
         {
           "from": "puppeteer_cache/chrome",

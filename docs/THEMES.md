@@ -96,6 +96,48 @@ A JSON theme therefore recolours whichever of those two shapes is active. If
 you want a different shape as well, copy one of those stylesheets and open a
 pull request — that is a skin, not a theme, and it is welcome.
 
+## Importing a skin made for ICQ 6.5 or ICQ 7
+
+By ICQ 6 the interface was drawn by Boxely, AOL's XML-and-CSS engine, which
+makes these the only skins in the whole ICQ lineage that are not a binary
+format. A skin is a `*.style.box` file — XML declaring bitmaps, image brushes
+and styles, with plain `#rrggbb` colours written out in full.
+
+### Getting one out of its installer
+
+Skins shipped as Inno Setup installers, and unpacking one needs
+[innoextract](https://constexpr.org/innoextract/), which this application does
+not require of anyone. So do it once yourself:
+
+```bash
+innoextract -e -d extracted "ICQ 7 Skin - Something Setup.exe"
+```
+
+Then zip the folder under `extracted/app/Packages/` and drop the zip into
+`themes/`. Give a skin that ships without a `Package.xml` a sensible filename —
+that is what it will be called in the list.
+
+### What comes across
+
+Colours and the package name, on the same terms as the other two importers.
+The PNGs are real files here rather than an opaque blob, but a theme still
+cannot reference an image without reopening the `url()` hole the rules above
+close.
+
+Two details worth knowing, both learned from real files:
+
+- **Comments are stripped before anything is read.** These files open with a
+  copyright banner of several kilobytes, and skins were copied from one
+  another, so a commented-out block from whatever the author started with is
+  ordinary. Reading colours out of one imports a different skin's palette.
+- **The frame colour is chosen by how much the skin uses it, not by how
+  colourful it is.** Picking the most saturated candidate turned every skin's
+  frame the same gold: these files all descend from one template and inherit a
+  decorative tone none of them actually paints the window with.
+
+Verified against six skins: Pro7 comes out red (`#C50026`), Borussia Dortmund
+yellow (`#FFF801`), Puls 4 pink, Walla blue, Gold gold. Each keeps its brand.
+
 ## Importing a skin made for ICQ Plus
 
 ICQ Plus was the add-on that let people reskin ICQ 99b through 2003b, and it is

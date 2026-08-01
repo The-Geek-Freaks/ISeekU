@@ -600,27 +600,45 @@ function loadThemes() {
     return []; // No themes directory is the normal case, not an error.
   }
   const { toSkin } = require('./lib/icq-theme');
-  // Skins people made for the real ICQ, which become the same shape as a
-  // hand-written theme and are then validated by the same code. See
-  // lib/icq-skn.js and lib/icq-plus-skin.js for what survives the conversion.
-  const { toTheme: sknToTheme } = require('./lib/icq-skn');
-  const { toTheme: plusToTheme } = require('./lib/icq-plus-skin');
+  // Skins people made for the real ICQ, across all three of its skinnable
+  // eras. Each becomes the same shape as a hand-written theme and is then
+  // validated by the same code -- see the modules for what survives the
+  // conversion and what cannot.
+  const { toTheme: sknToTheme } = require('./lib/icq-skn');          // ICQ Lite 5
+  const { toTheme: plusToTheme } = require('./lib/icq-plus-skin');   // ICQ Plus, 1999-2003
+  const { toTheme: boxelyToTheme } = require('./lib/icq-boxely-skin'); // ICQ 6.5 / 7
+
+  // A `.zip` could be either of the two archive formats, so the extension is
+  // only a hint: try both and let the one that recognises its own contents
+  // answer. Boxely goes first because it identifies itself in XML, which is
+  // harder to match by accident than a binary signature.
+  const convertArchive = (buffer, filename) => {
+    const boxely = boxelyToTheme(buffer, { filename });
+    if (!boxely.error) return boxely;
+    const plus = plusToTheme(buffer, { filename });
+    if (!plus.error) return plus;
+    // Report whichever refusal is more specific than "no skin data in it",
+    // since that is the one that tells the Owner what to do about it.
+    return /no icq plus skin data/i.test(plus.error) ? boxely : plus;
+  };
 
   const themes = [];
   for (const entry of entries) {
     if (!entry.isFile()) continue;
     const name = entry.name.toLowerCase();
     const isJson = name.endsWith('.json');
-    const isSkn = name.endsWith('.skn'); // ICQ Lite 5
-    const isPlus = name.endsWith('.ipz') || name.endsWith('.zip'); // ICQ Plus, 1999-2003
-    if (!isJson && !isSkn && !isPlus) continue;
+    const isSkn = name.endsWith('.skn');
+    const isArchive = name.endsWith('.ipz') || name.endsWith('.zip');
+    if (!isJson && !isSkn && !isArchive) continue;
 
     try {
       const file = path.join(dir, entry.name);
       let data;
-      if (isSkn || isPlus) {
-        const convert = isSkn ? sknToTheme : plusToTheme;
-        const { theme, notes, error: skinError } = convert(fs.readFileSync(file), { filename: entry.name });
+      if (isSkn || isArchive) {
+        const buffer = fs.readFileSync(file);
+        const { theme, notes, error: skinError } = isSkn
+          ? sknToTheme(buffer, { filename: entry.name })
+          : convertArchive(buffer, entry.name);
         if (skinError) { logStartup('Skin ' + entry.name + ' refused: ' + skinError); continue; }
         for (const n of notes || []) logStartup('Skin ' + entry.name + ': ' + n);
         data = theme;

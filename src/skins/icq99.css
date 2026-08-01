@@ -212,17 +212,32 @@
   min-height: 0;
 }
 
+/* The original drew this as a label with a rule running off to the right --
+   "a plain Online divider line rather than a filled group band", per the
+   screenshot evidence in docs/ORIGINAL-REFERENCE.md. A filled band is the
+   Windows Explorer look, not the ICQ one, and it makes the list read as
+   heavier and more modern than it was. The rule is the classic two-tone
+   engraved line: shadow above, highlight below. */
 :root[data-skin='icq99'] .icq-group {
   height: var(--icq-group-h);
   display: flex;
   align-items: center;
+  gap: 4px;
   padding-left: var(--icq-group-indent);
-  background: var(--win-face);
-  border-top: 1px solid var(--win-highlight);
-  border-bottom: 1px solid var(--win-shadow);
+  padding-right: 4px;
+  background: transparent;
   font-weight: bold;
   cursor: default;
 }
+
+:root[data-skin='icq99'] .icq-group::after {
+  content: '';
+  flex: 1 1 auto;
+  height: 2px;
+  border-top: 1px solid var(--win-shadow);
+  border-bottom: 1px solid var(--win-highlight);
+}
+
 
 :root[data-skin='icq99'] .icq-group-arrow {
   width: var(--icq-arrow-w);
@@ -231,9 +246,9 @@
   font-size: 9px;
 }
 
+/* Sits right after the label rather than pushed to the far edge, so the
+   divider rule fills what is left instead of being squeezed to nothing. */
 :root[data-skin='icq99'] .icq-group-count {
-  margin-left: auto;
-  padding-right: 4px;
   font-weight: normal;
   color: var(--win-grey-text);
 }

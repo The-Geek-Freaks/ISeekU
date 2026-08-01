@@ -600,24 +600,28 @@ function loadThemes() {
     return []; // No themes directory is the normal case, not an error.
   }
   const { toSkin } = require('./lib/icq-theme');
-  const { toTheme } = require('./lib/icq-skn');
+  // Skins people made for the real ICQ, which become the same shape as a
+  // hand-written theme and are then validated by the same code. See
+  // lib/icq-skn.js and lib/icq-plus-skin.js for what survives the conversion.
+  const { toTheme: sknToTheme } = require('./lib/icq-skn');
+  const { toTheme: plusToTheme } = require('./lib/icq-plus-skin');
+
   const themes = [];
   for (const entry of entries) {
     if (!entry.isFile()) continue;
     const name = entry.name.toLowerCase();
     const isJson = name.endsWith('.json');
-    // An ICQ Lite 5 skin from the old skin archives. It becomes the same shape
-    // as a hand-written theme and is then validated by the same code -- see
-    // lib/icq-skn.js for what does and does not survive the conversion.
-    const isSkn = name.endsWith('.skn');
-    if (!isJson && !isSkn) continue;
+    const isSkn = name.endsWith('.skn'); // ICQ Lite 5
+    const isPlus = name.endsWith('.ipz') || name.endsWith('.zip'); // ICQ Plus, 1999-2003
+    if (!isJson && !isSkn && !isPlus) continue;
 
     try {
       const file = path.join(dir, entry.name);
       let data;
-      if (isSkn) {
-        const { theme, notes, error: sknError } = toTheme(fs.readFileSync(file), { filename: entry.name });
-        if (sknError) { logStartup('Skin ' + entry.name + ' refused: ' + sknError); continue; }
+      if (isSkn || isPlus) {
+        const convert = isSkn ? sknToTheme : plusToTheme;
+        const { theme, notes, error: skinError } = convert(fs.readFileSync(file), { filename: entry.name });
+        if (skinError) { logStartup('Skin ' + entry.name + ' refused: ' + skinError); continue; }
         for (const n of notes || []) logStartup('Skin ' + entry.name + ': ' + n);
         data = theme;
       } else {

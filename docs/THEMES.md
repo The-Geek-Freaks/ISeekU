@@ -96,6 +96,59 @@ A JSON theme therefore recolours whichever of those two shapes is active. If
 you want a different shape as well, copy one of those stylesheets and open a
 pull request — that is a skin, not a theme, and it is welcome.
 
+## Importing a skin made for ICQ Plus
+
+ICQ Plus was the add-on that let people reskin ICQ 99b through 2003b, and it is
+what most surviving ICQ skins were made for — the ProSieben era, when everyone
+in Germany had ICQ. Skins ship as ZIPs, usually with the extension `.ipz`. Drop
+one into `themes/` alongside the others.
+
+### The format
+
+A ZIP holding the images and one binary index, `skininfo.dat`, which begins:
+
+```
+56 45              "VE"
+xx xx              version — 00 01, 01 02 and 04 03 all exist
+11 00              17, the length of what follows
+49 43 51 ...       "ICQPlus skin file"
+```
+
+Then the author's description, then sections — `Main dialog`, `Other dialogs`,
+`Floating contacts`, `Floating groups` — each carrying its font, its image
+filenames and its colours. Colours are Windows COLORREF: four bytes, red first,
+then green, blue and a zero. The header is identical across every version seen,
+so the reader keys off the magic rather than the version.
+
+### Why finding the colours is the hard part
+
+Four bytes ending in a zero is an extremely common pattern in binary data, and
+a naive scan turns up far more noise than palette. Three rules make it work:
+
+- **Text is never a colour.** `.gif` read one byte off gives `#696608`, `.jpg`
+  gives `#706701` — saturated, plausible, and completely wrong. Every byte
+  belonging to a string is excluded first.
+- **Colours come in runs**, and where two readings overlap the longer one wins.
+  A row of `C0 C0 C0 00` read one byte late parses just as validly as
+  `#C0C000`.
+- **Only the section blocks are read.** Deep in the layout data a run of
+  `00 00 FF 00` reads as a pure blue — more saturated, and more often, than the
+  muted blue the skin is actually built from.
+
+Verified against 23 skins from the Internet Archive and murb.com: all 23
+import. A Winamp skin filed under ICQ by mistake is correctly refused.
+
+### What comes across
+
+Colours and the name, on the same terms as an ICQ Lite 5 skin. The images here
+are real BMP and GIF files rather than an opaque blob, but a theme cannot
+reference an image — that would mean allowing `url()`, which the rules above
+refuse for good reason.
+
+A short description becomes the skin's name. A long one is the author writing
+prose — greetings, credits, a web address — and twenty skins from one designer
+carry the same paragraph, so the filename is used instead.
+
 ## Importing a skin made for ICQ Lite 5
 
 People made thousands of skins for ICQ 5, and the archives are still up —

@@ -377,10 +377,6 @@
   color: var(--icq-text);
 }
 
-.toolbar-sep {
-  flex: 1;
-}
-
 /* ── Groups collapsible section ── */
 .group-section {
   border-bottom: 1px solid rgba(255,255,255,0.06);

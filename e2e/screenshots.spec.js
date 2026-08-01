@@ -68,7 +68,10 @@ test('status menu', async () => {
 });
 
 test('chat window', async () => {
-  const contact = win.locator('.icq-contact, .contact-item').first();
+  // Kathrin is the Contact the fixture gives a full conversation to. Clicking
+  // whichever row happens to be first got the one-line unread teaser instead,
+  // which makes a poor picture of a chat window.
+  const contact = win.locator('.icq-contact, .contact-item').filter({ hasText: 'Kathrin' }).first();
   await expect(contact).toBeVisible();
   await contact.click();
 

@@ -35,13 +35,24 @@ const CONTACTS = [
 ];
 
 /** A short conversation that exercises the message log. */
+/**
+ * A short conversation that exercises the message log.
+ *
+ * Two of these carry XEP-0393 markers, so the screenshots show the styling
+ * actually rendering rather than only the buttons that produce it. They are
+ * written the way the specification intends: the markup IS the text, so a
+ * client that has never heard of XEP-0393 shows the asterisks and loses
+ * nothing.
+ */
 const CONVERSATION = [
   { from: 'them', at: T0 - 900, body: 'Uh-oh! Bist du noch wach?' },
   { from: 'me', at: T0 - 840, body: 'Klar. Baue gerade an ISeekU weiter.' },
   { from: 'them', at: T0 - 780, body: 'Das alte ICQ? Respekt.' },
-  { from: 'me', at: T0 - 700, body: 'Nicht nachgebaut — es spricht echtes XMPP.\nKontaktliste kommt vom Server.' },
+  { from: 'me', at: T0 - 700, body: 'Nicht nachgebaut — es spricht *echtes* XMPP.\nDie Kontaktliste kommt vom Server.' },
   { from: 'them', at: T0 - 600, body: 'Und die Sounds?' },
   { from: 'me', at: T0 - 540, body: 'Uh-oh ist drin :)' },
+  { from: 'them', at: T0 - 300, body: 'Was ist mit den alten Skins von damals?' },
+  { from: 'me', at: T0 - 240, body: 'Laufen. Alle drei Formate — `.skn`, `.ipz` und Boxely.' },
   { from: 'them', at: T0 - 120, body: 'Schick mal einen Screenshot!' },
 ];
 

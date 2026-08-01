@@ -16,16 +16,32 @@ import React from 'react';
  * pixel is the difference between a crisp icon and a smudged one.
  */
 
+/**
+ * The flower's colours, measured from a real ICQ asset rather than guessed.
+ *
+ * Extracted pixel-by-pixel from the ICQ 2001b splash screen
+ * (guidebookgallery.org/pics/splashes/icq/2001b.png): the petals are #00FF00,
+ * the one odd petal is #FF0000, and the centre is #FFFF00 — pure 8-bit
+ * primaries, which is exactly what a late-90s Windows application would use.
+ *
+ * An earlier version of this file used #4DAB27 and #FC021E, taken from the
+ * icq.com *website* palette of 2006. That was a real mistake worth recording:
+ * a brand's website colours are not its application's colours, and the muted
+ * greens made the flower read as 2006 rather than 2001.
+ */
 const PALETTE = {
-  online: '#4DAB27',
-  chat: '#94C729',
+  online: '#00FF00',
+  chat: '#7FFF00',
   away: '#FFD700',
   na: '#FF8C00',
   occupied: '#FF4500',
-  dnd: '#CC0000',
+  dnd: '#FF0000',
   invisible: '#808080',
-  offline: '#606060',
+  offline: '#808080',
 };
+
+/** VERIFIED from the 2001b splash: petal, odd petal, centre. */
+const FLOWER = { petal: '#00FF00', oddPetal: '#FF0000', centre: '#FFFF00' };
 
 /** Petal positions for the flower, at 45-degree steps around the centre. */
 const PETALS = [
@@ -46,10 +62,12 @@ function Flower({ colour, dim }) {
           cx={cx}
           cy={cy}
           r="2.4"
-          fill={i === 1 ? '#FC021E' : colour}
+          // The single odd petal. On the real logo it sits top-right of the
+          // centre, and it is the detail everyone remembers.
+          fill={i === 1 ? FLOWER.oddPetal : colour}
         />
       ))}
-      <circle cx="8" cy="8" r="2.6" fill="#FFD700" />
+      <circle cx="8" cy="8" r="2.6" fill={FLOWER.centre} />
     </g>
   );
 }
@@ -159,4 +177,4 @@ export default function StatusIcon({ status = 'offline', size = 16, title, class
   );
 }
 
-export { PALETTE as STATUS_COLOURS };
+export { PALETTE as STATUS_COLOURS, FLOWER };

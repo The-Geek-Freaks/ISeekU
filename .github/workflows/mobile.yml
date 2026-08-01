@@ -1,0 +1,227 @@
+# Mobile builds.
+#
+# The iOS half is the reason this file exists. Building for iOS needs Xcode,
+# Xcode needs macOS, and the machine this project is developed on runs Windows
+# — so the build happens on a GitHub-hosted macOS runner instead. That is a
+# real Mac with a real Xcode, free for public repositories, and it removes the
+# "you need a Mac" blocker entirely.
+#
+# What it cannot remove is Apple's signing requirement. An IPA that installs on
+# a normal iPhone must be signed with a certificate from a paid Apple Developer
+# account, and that certificate belongs to a person, not to a CI job. So this
+# produces an UNSIGNED archive: enough to prove the app builds, enough to run
+# in the Simulator, and enough to sign later with `xcrun` once someone has an
+# account. It is honest about being that rather than shipping something called
+# an IPA that no phone will accept.
+#
+# The Android half runs here too so both mobile targets are built by the same
+# trigger. Its signing key is a repository secret; without one it still
+# produces a debug-signed APK, which installs fine by sideloading.
+
+name: Mobile
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to attach artifacts to (leave empty to only build)'
+        required: false
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build the web application
+        run: |
+          npm ci
+          npm run build
+        env:
+          CI: false
+
+      - name: Generate the native project
+        working-directory: mobile
+        run: |
+          npm install
+          npx cap add android
+          npx cap sync android
+
+      # A release key is optional. Without it Gradle falls back to the debug
+      # certificate, which still produces an installable APK -- it just cannot
+      # go to the Play Store.
+      # A secret cannot be read in an `if:` expression, so the presence check
+      # happens inside the step instead. Without a key the next step falls
+      # back to a debug build, which still installs by sideloading.
+      - name: Restore the signing key
+        working-directory: mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "No signing key configured; the build will use the debug certificate."
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > release.jks
+          cat > keystore.properties <<EOF
+          storeFile=release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      # The generated project has no release signing config, because
+      # `npx cap add android` writes a template that does not know about one.
+      - name: Wire the signing config into Gradle
+        working-directory: mobile/android
+        run: |
+          [ -f keystore.properties ] || exit 0
+          python3 - <<'PY'
+          import re, pathlib
+          p = pathlib.Path('app/build.gradle')
+          s = p.read_text()
+          if 'keystore.properties' in s:
+              raise SystemExit(0)
+          s = ('''def keystorePropertiesFile = rootProject.file("keystore.properties")
+          def keystoreProperties = new Properties()
+          if (keystorePropertiesFile.exists()) {
+              keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+          }
+
+          ''' + s)
+          s = re.sub(r'(android \{\n)', r'''\1    signingConfigs {
+                  release {
+                      if (keystoreProperties['storeFile']) {
+                          storeFile file(keystoreProperties['storeFile'])
+                          storePassword keystoreProperties['storePassword']
+                          keyAlias keystoreProperties['keyAlias']
+                          keyPassword keystoreProperties['keyPassword']
+                      }
+                  }
+              }
+          ''', s, count=1)
+          s = re.sub(r'(buildTypes \{\n\s*release \{\n)',
+                     r"\1            signingConfig signingConfigs.release\n", s, count=1)
+          p.write_text(s)
+          PY
+
+      - name: Build
+        working-directory: mobile/android
+        run: |
+          if [ -f keystore.properties ]; then
+            ./gradlew assembleRelease --no-daemon
+            find . -name "*.apk" -path "*release*" -exec cp {} ../../ISeekU-android.apk \;
+          else
+            ./gradlew assembleDebug --no-daemon
+            find . -name "*.apk" -path "*debug*" -exec cp {} ../../ISeekU-android-debug.apk \;
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: ISeekU-android*.apk
+          if-no-files-found: error
+
+  ios:
+    name: iOS archive
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Build the web application
+        run: |
+          npm ci
+          npm run build
+        env:
+          CI: false
+
+      - name: Generate the native project
+        working-directory: mobile
+        run: |
+          npm install
+          npx cap add ios
+          npx cap sync ios
+
+      # CODE_SIGNING_ALLOWED=NO is what makes this possible without an Apple
+      # Developer account. The archive that comes out is a real build of the
+      # application; it simply carries no signature, so it runs in the
+      # Simulator and can be signed afterwards by someone who has a
+      # certificate.
+      - name: Build the archive, unsigned
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath "$PWD/ISeekU.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            archive
+
+      - name: Package the archive
+        working-directory: mobile/ios/App
+        run: |
+          mkdir -p Payload
+          cp -r ISeekU.xcarchive/Products/Applications/App.app Payload/ISeekU.app
+          zip -qry "$GITHUB_WORKSPACE/ISeekU-ios-unsigned.ipa" Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: ISeekU-ios-unsigned.ipa
+          if-no-files-found: error
+
+  attach:
+    name: Attach to release
+    needs: [android, ios]
+    runs-on: ubuntu-latest
+    if: ${{ always() && (inputs.tag != '' || startsWith(github.ref, 'refs/tags/')) }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - run: find artifacts -type f | sort
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

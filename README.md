@@ -7,7 +7,7 @@
 [![Electron 29](https://img.shields.io/badge/Electron-29-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
 [![React 18](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![XMPP RFC 6120/6121](https://img.shields.io/badge/XMPP-RFC%206120%2F6121-7AB648)](https://xmpp.org/rfcs/rfc6120.html)
-[![790 tests](https://img.shields.io/badge/tests-790-7AB648)](#tests)
+[![1023 tests](https://img.shields.io/badge/tests-1023-7AB648)](#tests)
 [![MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 </div>
@@ -46,7 +46,7 @@ Underneath it is XMPP, which is what the surviving ICQ network actually speaks.
 That has a consequence the original never had: ISeekU reaches **any** XMPP
 server, not just icqr.net.
 
-**Three accounts, side by side:**
+**Four accounts, side by side:**
 
 | | |
 |---|---|
@@ -77,7 +77,30 @@ own colours, measured off the 2001b splash screen, are the pure primaries
 `#00FF00`, `#FF0000` and `#FFFF00`. A brand's website is not its application,
 and the muted greens made the flower read six years too late.
 
+## Everything it does
+
+| | |
+|---|---|
+| **Four accounts** | ICQ over XMPP · WhatsApp · Telegram · IRC, side by side |
+| **Two eras** | ICQ 7 (2010) and ICQ Classic (2001), both in the native OS window frame |
+| **Skin import** | All three of ICQ's skinnable formats — `.ipz`, `.skn`, Boxely |
+| **All eight Statuses** | Including Free For Chat and Privacy (Invisible) |
+| **Away Messages** | With the idle timers that set them |
+| **Contact List** | Groups, Not In List, Authorization requests, Alert-when-online |
+| **Message formatting** | XEP-0393: bold, italic, strikethrough, monospace |
+| **Appearance** | Font, size, colour, chat background — local rendering |
+| **Message Archive** | Local, and reads what the official ICQ Reborn client writes |
+| **Peer to peer** | File transfer with no size limit, audio and video calls, direct between two ISeekU clients |
+| **Games** | Tic-Tac-Toe and Quatro against a Contact |
+| **Mobile** | Capacitor shell and an XMPP-over-WebSocket transport, over a bridge |
+| **Desktop** | Windows, macOS and Linux, signed releases |
+
 ## Skins people made twenty years ago still load
+
+<div align="center">
+  <img src="docs/skins.svg" width="100%" alt="Six skins side by side: ICQ 7 and ICQ Classic built in, then Pro7 in red, Borussia Dortmund in yellow, Puls 4 in pink and bigmir in dark red — each imported from a real skin file and keeping its own palette." />
+</div>
+
 
 All three of ICQ's skinnable eras import, straight into `themes/`. Each was
 reverse-engineered from real files off the surviving archives.

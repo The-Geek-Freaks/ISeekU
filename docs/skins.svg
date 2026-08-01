@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="Six skins imported from real ICQ skin files: ICQ 7, ICQ Classic, Pro7, Borussia Dortmund, Puls 4 and bigmir, each keeping its own palette.">
+  <title>Skins, imported from the real files</title>
+
+  <defs>
+    <linearGradient id="s-ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#121814"/>
+      <stop offset="100%" stop-color="#0B0F0D"/>
+    </linearGradient>
+    <linearGradient id="s-icq7" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DEEDD4"/>
+      <stop offset="55%" stop-color="#C5E2B6"/>
+      <stop offset="100%" stop-color="#97C770"/>
+    </linearGradient>
+    <linearGradient id="s-win98" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000080"/>
+      <stop offset="100%" stop-color="#1084D0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="300" fill="url(#s-ground)"/>
+
+  <g font-family="Tahoma, Verdana, Geneva, DejaVu Sans, sans-serif">
+    <text x="40" y="42" font-size="22" font-weight="700" fill="#F2F6F3">Skins people made twenty years ago, loaded from the original files</text>
+    <text x="40" y="68" font-size="14" fill="#7E9686">Two built in. The rest imported from .ipz, .skn and Boxely packages — each keeps the palette its author chose.</text>
+  </g>
+
+  <!-- Each card: a title bar in the skin's chrome, three rows, and the
+       palette underneath as swatches. Six across at 176 wide, 20 apart. -->
+
+  <!-- ICQ 7, built in -->
+  <g transform="translate(40, 96)">
+    <rect width="176" height="130" rx="3" fill="#FFFFFF"/>
+    <rect width="176" height="26" rx="3" fill="url(#s-icq7)"/>
+    <circle cx="15" cy="13" r="7" fill="#5C9E31"/>
+    <text x="28" y="17" font-family="Tahoma, Verdana, sans-serif" font-size="9" font-weight="700" fill="#3D5C29">ISeekU</text>
+    <rect x="0" y="32" width="176" height="26" fill="#C4DFA6"/>
+    <circle cx="16" cy="45" r="8" fill="#8FBF6A"/>
+    <text x="30" y="43" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#2B3B24">Kathrin</text>
+    <text x="30" y="54" font-family="Tahoma, Verdana, sans-serif" font-size="8" fill="#5E7A4E">up for a chat</text>
+    <circle cx="16" cy="72" r="8" fill="#D9D9D9"/>
+    <text x="30" y="76" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#2B3B24">Marco</text>
+    <circle cx="16" cy="99" r="8" fill="#D9D9D9"/>
+    <text x="30" y="103" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#8A8A8A">Jenny</text>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#C5E2B6"/><rect x="30" width="26" height="10" fill="#97C770"/>
+      <rect x="60" width="26" height="10" fill="#C4DFA6"/><rect x="90" width="26" height="10" fill="#5C9E31"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">ICQ 7</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">built in</text>
+    </g>
+  </g>
+
+  <!-- ICQ Classic, built in -->
+  <g transform="translate(236, 96)">
+    <rect width="176" height="130" fill="#C0C0C0"/>
+    <rect width="176" height="1" fill="#FFFFFF"/>
+    <rect x="3" y="3" width="170" height="18" fill="url(#s-win98)"/>
+    <text x="8" y="16" font-family="Tahoma, Verdana, sans-serif" font-size="10" font-weight="700" fill="#FFFFFF">ICQ</text>
+    <g font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#000000">
+      <text x="9" y="40" font-weight="700" fill="#000080">Friends</text>
+      <rect x="50" y="37" width="117" height="1" fill="#808080"/>
+      <rect x="50" y="38" width="117" height="1" fill="#FFFFFF"/>
+      <circle cx="14" cy="54" r="4" fill="#00FF00"/><text x="25" y="57">Kathrin</text>
+      <circle cx="14" cy="72" r="4" fill="#FFD700"/><text x="25" y="75">Marco</text>
+      <circle cx="14" cy="90" r="4" fill="#808080"/><text x="25" y="93" fill="#808080">Jenny</text>
+    </g>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#C0C0C0"/><rect x="30" width="26" height="10" fill="#000080"/>
+      <rect x="60" width="26" height="10" fill="#808080"/><rect x="90" width="26" height="10" fill="#00FF00"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">ICQ Classic</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">built in</text>
+    </g>
+  </g>
+
+  <!-- Imported: Pro7 -->
+  <g transform="translate(432, 96)">
+    <rect width="176" height="130" rx="3" fill="#FFFFFF"/>
+    <rect width="176" height="26" rx="3" fill="#EEEEEE"/>
+    <circle cx="15" cy="13" r="7" fill="#C50026"/>
+    <text x="28" y="17" font-family="Tahoma, Verdana, sans-serif" font-size="9" font-weight="700" fill="#4B4A47">ISeekU</text>
+    <rect x="0" y="32" width="176" height="26" fill="#F2C7CF"/>
+    <circle cx="16" cy="45" r="8" fill="#C50026"/>
+    <text x="30" y="48" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#4B4A47">Kathrin</text>
+    <circle cx="16" cy="72" r="8" fill="#D9D9D9"/>
+    <text x="30" y="76" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#4B4A47">Marco</text>
+    <circle cx="16" cy="99" r="8" fill="#D9D9D9"/>
+    <text x="30" y="103" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#8A8A8A">Jenny</text>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#C50026"/><rect x="30" width="26" height="10" fill="#EEEEEE"/>
+      <rect x="60" width="26" height="10" fill="#4B4A47"/><rect x="90" width="26" height="10" fill="#F2C7CF"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">Pro7</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">ICQ 7 · Boxely</text>
+    </g>
+  </g>
+
+  <!-- Imported: Borussia Dortmund -->
+  <g transform="translate(628, 96)">
+    <rect width="176" height="130" rx="3" fill="#FFF801"/>
+    <rect width="176" height="26" rx="3" fill="#EEEEEE"/>
+    <circle cx="15" cy="13" r="7" fill="#FFF801" stroke="#4B4A47"/>
+    <text x="28" y="17" font-family="Tahoma, Verdana, sans-serif" font-size="9" font-weight="700" fill="#1A1A1A">ISeekU</text>
+    <rect x="0" y="32" width="176" height="26" fill="#FFFDB8"/>
+    <circle cx="16" cy="45" r="8" fill="#1A1A1A"/>
+    <text x="30" y="48" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#1A1A1A">Kathrin</text>
+    <circle cx="16" cy="72" r="8" fill="#E8E27A"/>
+    <text x="30" y="76" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#1A1A1A">Marco</text>
+    <circle cx="16" cy="99" r="8" fill="#E8E27A"/>
+    <text x="30" y="103" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#6B6A45">Jenny</text>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#FFF801"/><rect x="30" width="26" height="10" fill="#1A1A1A"/>
+      <rect x="60" width="26" height="10" fill="#EEEEEE"/><rect x="90" width="26" height="10" fill="#FFFDB8"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">BVB</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">ICQ 7 · Boxely</text>
+    </g>
+  </g>
+
+  <!-- Imported: Puls 4 -->
+  <g transform="translate(824, 96)">
+    <rect width="176" height="130" rx="3" fill="#FFFFFF"/>
+    <rect width="176" height="26" rx="3" fill="#CCC7C7"/>
+    <circle cx="15" cy="13" r="7" fill="#FF14B4"/>
+    <text x="28" y="17" font-family="Tahoma, Verdana, sans-serif" font-size="9" font-weight="700" fill="#4B4A47">ISeekU</text>
+    <rect x="0" y="32" width="176" height="26" fill="#FFD1F0"/>
+    <circle cx="16" cy="45" r="8" fill="#FF14B4"/>
+    <text x="30" y="48" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#4B4A47">Kathrin</text>
+    <circle cx="16" cy="72" r="8" fill="#D9D9D9"/>
+    <text x="30" y="76" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#4B4A47">Marco</text>
+    <circle cx="16" cy="99" r="8" fill="#D9D9D9"/>
+    <text x="30" y="103" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#8A8A8A">Jenny</text>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#FF14B4"/><rect x="30" width="26" height="10" fill="#CCC7C7"/>
+      <rect x="60" width="26" height="10" fill="#4B4A47"/><rect x="90" width="26" height="10" fill="#FFD1F0"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">Puls 4</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">ICQ 7 · Boxely</text>
+    </g>
+  </g>
+
+  <!-- Imported: bigmir, from an ICQ Lite 5 .skn -->
+  <g transform="translate(1020, 96)">
+    <rect width="140" height="130" fill="#FFFFFF"/>
+    <rect width="140" height="26" fill="#EFEEEC"/>
+    <circle cx="15" cy="13" r="7" fill="#C12D34"/>
+    <text x="28" y="17" font-family="Tahoma, Verdana, sans-serif" font-size="9" font-weight="700" fill="#000000">ISeekU</text>
+    <rect x="0" y="32" width="140" height="26" fill="#F6DADC"/>
+    <circle cx="16" cy="45" r="8" fill="#C12D34"/>
+    <text x="30" y="48" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#000000">Kathrin</text>
+    <circle cx="16" cy="72" r="8" fill="#D9D9D9"/>
+    <text x="30" y="76" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#000000">Marco</text>
+    <circle cx="16" cy="99" r="8" fill="#D9D9D9"/>
+    <text x="30" y="103" font-family="Tahoma, Verdana, sans-serif" font-size="9" fill="#8A8A8A">Jenny</text>
+    <g transform="translate(0, 138)">
+      <rect width="26" height="10" fill="#C12D34"/><rect x="30" width="26" height="10" fill="#EFEEEC"/>
+      <rect x="60" width="26" height="10" fill="#000000"/><rect x="90" width="26" height="10" fill="#F6DADC"/>
+      <text x="0" y="26" font-family="Tahoma, Verdana, sans-serif" font-size="11" fill="#C6D8CB">bigmir</text>
+      <text x="0" y="40" font-family="Tahoma, Verdana, sans-serif" font-size="10" fill="#63796B">ICQ Lite 5 · .skn</text>
+    </g>
+  </g>
+</svg>

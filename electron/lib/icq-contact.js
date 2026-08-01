@@ -161,6 +161,38 @@ function intoGroups(contacts, { sortRank, showOffline = true } = {}) {
     });
 }
 
+/**
+ * Work out the address to add, from whatever the Owner typed.
+ *
+ * A bare UIN means someone on the Owner's own server, which is the ICQ case
+ * and by far the common one. But the network underneath is XMPP, so an address
+ * that already names a server is a perfectly good contact on any other server
+ * in the world — and refusing it would be throwing away the one real advantage
+ * this client has over the original.
+ *
+ * Returns null for input that is not an address at all, so the caller can say
+ * so rather than sending a malformed roster set.
+ */
+function addressToJid(input, ownDomain) {
+  const typed = String(input || '').trim();
+  if (!typed) return null;
+
+  const at = typed.indexOf('@');
+  if (at === -1) {
+    // A bare localpart: on our own server. ICQ's UINs are digits, but a
+    // non-numeric name is a valid localpart elsewhere and worth allowing.
+    return ownDomain ? `${typed}@${ownDomain}` : null;
+  }
+
+  // Already an address. Strip any resource: a Contact is a person, not one of
+  // their devices.
+  const bare = typed.split('/')[0];
+  const localpart = bare.slice(0, bare.indexOf('@'));
+  const domain = bare.slice(bare.indexOf('@') + 1);
+  if (!localpart || !domain || domain.includes('@')) return null;
+  return bare;
+}
+
 /** Compose a JID for a UIN on the Owner's own server. */
 function uinToJid(uin, domain) {
   return `${String(uin).trim()}@${domain}`;
@@ -177,4 +209,5 @@ module.exports = {
   toContact,
   intoGroups,
   uinToJid,
+  addressToJid,
 };

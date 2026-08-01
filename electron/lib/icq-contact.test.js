@@ -191,3 +191,44 @@ describe('addressing a UIN', () => {
     expect(uinToJid('  265019842 ', DOMAIN)).toBe(`265019842@${DOMAIN}`);
   });
 });
+
+describe('adding a contact from whatever was typed', () => {
+  const { addressToJid } = require('./icq-contact');
+
+  it('treats a bare UIN as someone on our own server', () => {
+    expect(addressToJid('265019842', DOMAIN)).toBe(`265019842@${DOMAIN}`);
+  });
+
+  it('accepts a full address on another server — the network is XMPP', () => {
+    // Refusing this would throw away the one advantage over the original.
+    expect(addressToJid('alex@jabber.example.org')).toBe('alex@jabber.example.org');
+  });
+
+  it('keeps the other server, not ours, when one was given', () => {
+    expect(addressToJid('alex@jabber.example.org', DOMAIN)).toBe('alex@jabber.example.org');
+  });
+
+  it('drops a resource — a Contact is a person, not a device', () => {
+    expect(addressToJid('alex@example.org/phone')).toBe('alex@example.org');
+  });
+
+  it('tolerates surrounding whitespace', () => {
+    expect(addressToJid('  265019842  ', DOMAIN)).toBe(`265019842@${DOMAIN}`);
+  });
+
+  it('allows a non-numeric name on our own server', () => {
+    expect(addressToJid('kathrin', DOMAIN)).toBe(`kathrin@${DOMAIN}`);
+  });
+
+  it('refuses input that is not an address', () => {
+    expect(addressToJid('', DOMAIN)).toBeNull();
+    expect(addressToJid('   ', DOMAIN)).toBeNull();
+    expect(addressToJid('@example.org')).toBeNull();
+    expect(addressToJid('alex@')).toBeNull();
+    expect(addressToJid('a@b@c')).toBeNull();
+  });
+
+  it('refuses a bare name when we do not know our own server', () => {
+    expect(addressToJid('265019842', null)).toBeNull();
+  });
+});

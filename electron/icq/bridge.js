@@ -236,8 +236,22 @@ class IcqBridge extends EventEmitter {
     });
   }
 
-  async addContact(uin, nickname, group) {
-    const jid = contactModel.uinToJid(uin, this.account.domain);
+  /**
+   * Add a Contact.
+   *
+   * `address` is whatever the Owner typed: a bare UIN for someone on our own
+   * server, or a full address for someone on any other XMPP server in the
+   * world. The second case is the one thing this client can do that the
+   * original could not, and it costs nothing to allow.
+   */
+  async addContact(address, nickname, group) {
+    const jid = contactModel.addressToJid(address, this.account.domain);
+    if (!jid) {
+      throw Object.assign(
+        new Error(`"${address}" is not an ICQ number or an address.`),
+        { code: 'BAD_ADDRESS' },
+      );
+    }
     const item = this.xml('item', nickname ? { jid, name: nickname } : { jid });
     if (group) item.append(this.xml('group', {}, group));
     await this.connection.entity.iqCaller.set(this.xml('query', NS.roster, item));

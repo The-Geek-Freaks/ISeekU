@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import GAMES from '../games';
 import './Sidebar.css';
 import { SKINS, allSkins, loadThemes, setSkin, getSavedSkinId } from '../skins';
 import StatusIcon from './icq/StatusIcon';
@@ -6,11 +7,6 @@ import IcqContactList from './icq/IcqContactList';
 import StatusMenu from './icq/StatusMenu';
 import IcqMainMenu from './icq/IcqMainMenu';
 import Preferences from './icq/Preferences';
-
-const GAMES = [
-  { id: '8ball', name: '8 Ball Pool',  icon: '🎱', url: 'https://bloob.io/de/8ballpool' },
-  { id: 'lama',  name: 'Slide-A-Lama', icon: '🦙', url: 'https://slidealama.eu/' },
-];
 
 const STATUS_COLOR = {
   ready: '#44DD44', 'needs-auth': '#F5C400', 'no-credentials': '#F5C400',

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import GAMES from '../games';
 import './ChatWindow.css';
 
 function formatTime(ts) {
@@ -23,10 +24,6 @@ function dayKey(ts) {
 }
 
 // ── Games ──────────────────────────────────────────────────
-const GAMES = [
-  { id: '8ball', name: '8 Ball Pool',   icon: '🎱', url: 'https://bloob.io/de/8ballpool' },
-  { id: 'lama',  name: 'Slide-A-Lama',  icon: '🦙', url: 'https://slidealama.eu/' },
-];
 
 const EMOJIS = [
   '😀','😂','😍','😎','😭','😅','🥺','😊','😇','🤔','😴','😜','🥳','😬','🤩',

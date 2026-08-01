@@ -156,6 +156,14 @@ contextBridge.exposeInMainWorld('api', {
     onAuthorizationAnswer:  (cb) => subscribe('icq:authorization-answer', cb),
     onInsecure:   (cb) => subscribe('icq:insecure', cb),
     onError:      (cb) => subscribe('icq:error', cb),
+
+    // Peer signalling for calls, file transfer and games. The WebRTC
+    // connection itself is built in the renderer, which already has a complete
+    // stack; only the offer/answer/candidate exchange crosses to the main
+    // process to reach the XMPP socket.
+    sendSignal:   (jid, payload) => ipcRenderer.invoke('icq:send-signal', jid, payload),
+    onSignal:     (cb) => subscribe('icq:signal', cb),
+    onSignalRefused: (cb) => subscribe('icq:signal-refused', cb),
   },
   // Chat windows
   openChat: (params) => ipcRenderer.invoke('open-chat', params),

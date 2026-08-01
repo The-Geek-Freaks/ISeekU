@@ -180,14 +180,31 @@
 .svc-logo { width: 1.55rem; height: 1.55rem; object-fit: contain; border-radius: 4px; }
 .svc-label { font-size: 0.73rem; letter-spacing: 0.3px; }
 
+/* The connection dot belongs to the icon, not to the corner of the tab.
+   Anchored to the tab it collided with the logo — the tabs are a third of the
+   sidebar each, so "top right of the tab" and "edge of the icon" are the same
+   few pixels. Sitting it on the icon's own corner is the familiar badge
+   pattern and cannot collide, whatever the tab is doing. */
+.svc-icon {
+  position: relative;
+  display: inline-flex;
+  line-height: 0;
+}
+
 .svc-dot {
   position: absolute;
-  top: 4px;
-  right: 8px;
-  width: 6px;
-  height: 6px;
+  right: -3px;
+  bottom: -1px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  box-shadow: 0 0 3px currentColor;
+  /* A ring in the tab's own background separates the dot from whatever it
+     sits on, so it reads as a badge rather than as part of the logo. */
+  box-shadow: 0 0 0 1.5px var(--icq-bg);
+}
+
+.svc-tab.active .svc-dot {
+  box-shadow: 0 0 0 1.5px var(--icq-bg-mid);
 }
 
 /* ── Support / donate footer ── */

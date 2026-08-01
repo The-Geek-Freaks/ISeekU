@@ -357,27 +357,33 @@ export default function Sidebar({
           onClick={() => setActiveService('icq')}
           title="ICQ"
         >
-          <StatusIcon status={icqStatus === 'ready' ? 'online' : 'offline'} size={16} title="ICQ" />
+          <span className="svc-icon">
+            <StatusIcon status={icqStatus === 'ready' ? 'online' : 'offline'} size={22} title="ICQ" />
+            <span className="svc-dot" style={{ background: STATUS_COLOR[icqStatus] }} />
+          </span>
           <span className="svc-label">ICQ</span>
-          <span className="svc-dot" style={{ background: STATUS_COLOR[icqStatus] }} />
         </button>
         <button
           className={`svc-tab ${activeService === 'whatsapp' ? 'active' : ''}`}
           onClick={() => setActiveService('whatsapp')}
           title="WhatsApp"
         >
-          <img src={process.env.PUBLIC_URL + '/whatsapp-logo.svg'} className="svc-logo" alt="WhatsApp" />
+          <span className="svc-icon">
+            <img src={process.env.PUBLIC_URL + '/whatsapp-logo.svg'} className="svc-logo" alt="WhatsApp" />
+            <span className="svc-dot" style={{ background: STATUS_COLOR[waStatus] }} />
+          </span>
           <span className="svc-label">WhatsApp</span>
-          <span className="svc-dot" style={{ background: STATUS_COLOR[waStatus] }} />
         </button>
         <button
           className={`svc-tab ${activeService === 'telegram' ? 'active' : ''}`}
           onClick={() => setActiveService('telegram')}
           title="Telegram"
         >
-          <img src={process.env.PUBLIC_URL + '/telegram-logo.svg'} className="svc-logo" alt="Telegram" />
+          <span className="svc-icon">
+            <img src={process.env.PUBLIC_URL + '/telegram-logo.svg'} className="svc-logo" alt="Telegram" />
+            <span className="svc-dot" style={{ background: STATUS_COLOR[tgStatus] }} />
+          </span>
           <span className="svc-label">Telegram</span>
-          <span className="svc-dot" style={{ background: STATUS_COLOR[tgStatus] }} />
         </button>
       </div>
 

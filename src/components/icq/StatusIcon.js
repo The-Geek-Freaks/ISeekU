@@ -43,31 +43,52 @@ const PALETTE = {
 /** VERIFIED from the 2001b splash: petal, odd petal, centre. */
 const FLOWER = { petal: '#00FF00', oddPetal: '#FF0000', centre: '#FFFF00' };
 
-/** Petal positions for the flower, at 45-degree steps around the centre. */
-const PETALS = [
-  [8, 3], [11.5, 4.5], [13, 8], [11.5, 11.5],
-  [8, 13], [4.5, 11.5], [3, 8], [4.5, 4.5],
-];
+/**
+ * One petal, pointing up from the centre.
+ *
+ * The shape matters as much as the colour. The real flower's petals are
+ * teardrops — narrow where they meet the centre, rounded and wide at the tip —
+ * not the circles an earlier version of this file used. Circles at this size
+ * overlap into a lump; teardrops read as a flower even at 16 pixels.
+ */
+const PETAL_PATH = 'M8 7.2 C6.15 6.5 5.25 4.35 6.05 2.75 '
+  + 'C6.5 1.85 7.2 1.4 8 1.4 C8.8 1.4 9.5 1.85 9.95 2.75 '
+  + 'C10.75 4.35 9.85 6.5 8 7.2 Z';
+
+/** Eight petals, at 45-degree steps. */
+const PETAL_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+
+/**
+ * The petal that is red rather than green.
+ *
+ * On the original it sits low and to the LEFT of the centre — an earlier
+ * version of this file put it top-right, which is the sort of detail that
+ * makes a recreation feel almost-right instead of right. 225 degrees is the
+ * lower-left diagonal.
+ */
+const ODD_PETAL_ANGLE = 225;
 
 /**
  * The flower, as used for the Statuses where the Owner is reachable.
- * One petal is red — the detail everybody remembers about the ICQ logo.
+ *
+ * The black outline is the single most recognisable thing about the ICQ
+ * flower and the previous version had none at all, which is why it read as a
+ * generic cluster of dots. It is drawn as a stroke on every shape rather than
+ * as a silhouette behind them, because at 16 pixels a silhouette fills in the
+ * gaps between petals and loses the shape entirely.
  */
 function Flower({ colour, dim }) {
   return (
-    <g opacity={dim ? 0.45 : 1}>
-      {PETALS.map(([cx, cy], i) => (
-        <circle
-          key={`${cx}-${cy}`}
-          cx={cx}
-          cy={cy}
-          r="2.4"
-          // The single odd petal. On the real logo it sits top-right of the
-          // centre, and it is the detail everyone remembers.
-          fill={i === 1 ? FLOWER.oddPetal : colour}
+    <g opacity={dim ? 0.45 : 1} stroke="#000000" strokeWidth="0.9" strokeLinejoin="round">
+      {PETAL_ANGLES.map((angle) => (
+        <path
+          key={angle}
+          d={PETAL_PATH}
+          transform={`rotate(${angle} 8 8)`}
+          fill={angle === ODD_PETAL_ANGLE ? FLOWER.oddPetal : colour}
         />
       ))}
-      <circle cx="8" cy="8" r="2.6" fill={FLOWER.centre} />
+      <circle cx="8" cy="8" r="2.3" fill={FLOWER.centre} />
     </g>
   );
 }

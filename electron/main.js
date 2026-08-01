@@ -558,6 +558,12 @@ for (const [event, channel] of Object.entries({
   'authorization-answer': 'icq:authorization-answer',
   insecure: 'icq:insecure',
   error: 'icq:error',
+  // Peer signalling: calls, file transfer and games between two ISeekU
+  // clients. The state machines and the WebRTC connection both live in the
+  // renderer -- a renderer is Chromium, so it already has a complete WebRTC
+  // stack, and putting it there costs no native dependency.
+  signal: 'icq:signal',
+  'signal-refused': 'icq:signal-refused',
 })) {
   icqBridge.on(event, (payload) => icqBroadcast(channel, payload));
 }
@@ -574,6 +580,10 @@ ipcMain.handle('icq:get-contacts',   async ()                  => icqBridge.list
 ipcMain.handle('icq:get-chats',      async ()                  => icqBridge.listChats());
 ipcMain.handle('icq:get-messages',   async (e, jid, opts)      => icqBridge.getMessages(jid, opts));
 ipcMain.handle('icq:send-message',   async (e, jid, body)      => icqBridge.sendMessage(jid, body));
+// Peer signalling. The payload is validated in lib/icq-signal.js before it
+// reaches the socket, so a renderer bug cannot put an arbitrary stanza on the
+// wire.
+ipcMain.handle('icq:send-signal',    async (e, jid, payload)   => icqBridge.sendSignal(jid, payload));
 ipcMain.handle('icq:send-typing',    async (e, jid, isTyping)  => icqBridge.sendTyping(jid, isTyping));
 ipcMain.handle('icq:mark-read',      async (e, jid)            => icqBridge.markRead(jid));
 ipcMain.handle('icq:set-status',     async (e, status, text)   => icqBridge.setStatus(status, text));

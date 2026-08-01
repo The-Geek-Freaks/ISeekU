@@ -22,6 +22,7 @@ const registration = require('./register');
 const presenceModel = require('../lib/icq-presence');
 const contactModel = require('../lib/icq-contact');
 const historyModel = require('../lib/icq-history');
+const signalModel = require('../lib/icq-signal');
 
 const NS = {
   roster: 'jabber:iq:roster',
@@ -532,8 +533,57 @@ class IcqBridge extends EventEmitter {
   // --- stanza routing ------------------------------------------------------
 
   onStanza(stanza) {
+    // Peer signalling rides on <message>, so it is checked before the ordinary
+    // message path -- otherwise a call offer would be shown in the chat log as
+    // a message with no body.
+    if (stanza.is('message') && this.onSignal(stanza)) return;
     if (stanza.is('message')) this.onMessage(stanza);
     else if (stanza.is('presence')) this.onPresence(stanza);
+  }
+
+  /**
+   * Route an inbound peer signal.
+   *
+   * Returns true when the stanza was a signal and has been dealt with, so the
+   * caller knows not to treat it as a chat message. Every ordinary message
+   * passes through here, so the not-a-signal path is the cheap one and is not
+   * logged.
+   */
+  onSignal(stanza) {
+    const result = signalModel.fromStanza(stanza);
+    if (result.ignore) return Boolean(result.unknownType);
+    if (result.error) {
+      // Refused signals are worth knowing about -- they mean either a peer
+      // bug or somebody probing -- but they are not shown to the Owner.
+      this.emit('signal-refused', { reason: result.error });
+      return true;
+    }
+
+    const { signal, from, family } = result;
+    const contact = this.contacts.get(contactModel.parseJid(from).bare);
+    this.emit('signal', { signal, from, family, contact: contact || null });
+    return true;
+  }
+
+  /**
+   * Send a peer signal to a Contact.
+   *
+   * Refuses rather than throws, because the callers are state machines that
+   * treat a failed send as one more transition rather than an exception.
+   */
+  async sendSignal(jid, payload) {
+    const { stanza: spec, error } = signalModel.toStanzaSpec(jid, payload);
+    if (error) return { error };
+    if (!this.connection) return { error: 'Not connected.' };
+
+    const element = this.xml(spec.name, spec.attrs,
+      this.xml(spec.child.name, spec.child.attrs, spec.child.text));
+    try {
+      await this.connection.send(element);
+      return { ok: true };
+    } catch (err) {
+      return { error: err.message };
+    }
   }
 
   async shutdown() {

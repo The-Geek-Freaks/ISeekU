@@ -90,7 +90,7 @@ reverse-engineered from real files off the surviving archives.
 
 **Verified against 36 real skins.** All 36 import with a palette that matches
 the skin — Pro7 comes out red, Borussia Dortmund yellow, Puls 4 pink, bigmir
-navy. A Winamp skin that was filed under ICQ by mistake is correctly refused.
+navy.
 
 Finding the colours is the whole difficulty, and the traps are specific:
 

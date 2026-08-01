@@ -1,0 +1,117 @@
+/*
+ * Styling for the FileTransfer component.
+ *
+ * Uses the project's Win98 palette variables (--win98-*) so it blends with
+ * GameSession and the rest of the chat window chrome. No new colours are
+ * introduced; the progress bar and state indicators rely purely on the
+ * existing design system.
+ */
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+
+.ft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-family: "MS Sans Serif", "Arial", sans-serif;
+  border: 1px solid var(--win98-border-dark, #808080);
+  background: var(--win98-bg, #c0c0c0);
+  box-shadow:
+    inset 1px 1px 0 var(--win98-border-light, #ffffff),
+    inset -1px -1px 0 var(--win98-border-darker, #404040);
+  margin: 4px 0;
+}
+
+.ft-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.ft-info {
+  flex: 1;
+  word-break: break-all;
+}
+
+.ft-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ft-label {
+  word-break: break-all;
+}
+
+/* ── Progress bar ──────────────────────────────────────────────────────────── */
+
+.ft-progress-wrap {
+  width: 100%;
+  height: 10px;
+  background: var(--win98-input-bg, #ffffff);
+  border: 1px inset var(--win98-border-dark, #808080);
+  overflow: hidden;
+}
+
+.ft-progress-bar {
+  height: 100%;
+  background: var(--win98-titlebar-active, #000080);
+  transition: width 0.1s linear;
+}
+
+.ft-bytes {
+  font-size: 10px;
+  color: var(--win98-text-secondary, #444444);
+}
+
+/* ── Action buttons ────────────────────────────────────────────────────────── */
+
+.ft-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ft-btn {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 2px outset var(--win98-border-dark, #808080);
+  background: var(--win98-bg, #c0c0c0);
+}
+
+.ft-btn:active {
+  border-style: inset;
+}
+
+/* ── Download link ─────────────────────────────────────────────────────────── */
+
+.ft-download {
+  color: var(--win98-titlebar-active, #000080);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── State variants ────────────────────────────────────────────────────────── */
+
+.ft--done .ft-icon {
+  color: #006400; /* dark green — "success" without introducing a new variable */
+}
+
+.ft--error {
+  border-color: #800000;
+}
+
+.ft--error .ft-icon {
+  color: #800000;
+}
+
+.ft--rejected .ft-icon,
+.ft--cancelled .ft-icon {
+  color: #808080;
+}

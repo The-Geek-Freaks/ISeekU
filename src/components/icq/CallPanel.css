@@ -1,0 +1,212 @@
+/* ── Call Panel ── */
+
+.call-panel {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2000;
+  background: var(--icq-bg-mid);
+  border: 1px solid var(--icq-teal-dark);
+  border-radius: 6px;
+  padding: 12px 14px;
+  min-width: 240px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+  animation: call-panel-in 0.15s ease;
+}
+
+@keyframes call-panel-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.call-panel-header {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--icq-teal-light);
+  margin-bottom: 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.call-panel-type {
+  font-size: 0.75rem;
+  color: var(--icq-text-dim);
+  margin-bottom: 10px;
+}
+
+.call-panel-contact {
+  font-size: 0.92rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+/* ── Ringing (incoming) ── */
+.call-panel--ringing {
+  border-color: var(--icq-teal);
+  animation: call-ring-pulse 0.9s ease-in-out infinite;
+}
+
+@keyframes call-ring-pulse {
+  0%, 100% { border-color: var(--icq-teal-dark); }
+  50%       { border-color: var(--icq-teal); box-shadow: 0 0 14px rgba(0, 170, 170, 0.4); }
+}
+
+.call-panel-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.call-panel-btn--accept {
+  background: linear-gradient(180deg, #2db82d 0%, #1a8c1a 100%);
+  border-color: #1a8c1a;
+  color: #fff;
+}
+
+.call-panel-btn--accept:hover {
+  background: linear-gradient(180deg, #3dd43d 0%, #2db82d 100%);
+}
+
+.call-panel-btn--decline {
+  background: linear-gradient(180deg, #cc4444 0%, #992222 100%);
+  border-color: #992222;
+  color: #fff;
+}
+
+.call-panel-btn--decline:hover {
+  background: linear-gradient(180deg, #dd5555 0%, #cc4444 100%);
+}
+
+/* ── Offering (outgoing, waiting) ── */
+.call-panel--offering {
+  border-color: var(--icq-teal-dark);
+}
+
+.call-panel-btn--cancel {
+  margin-top: 4px;
+}
+
+/* ── Active call ── */
+.call-panel--active {
+  min-width: 280px;
+  padding-bottom: 10px;
+}
+
+.call-panel--connecting .call-panel-connecting {
+  font-size: 0.75rem;
+  color: var(--icq-text-dim);
+  font-style: italic;
+  margin: 6px 0;
+}
+
+.call-panel-video-wrap {
+  position: relative;
+  width: 100%;
+  background: #000;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.call-panel-remote-video {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+  background: #111;
+  min-height: 140px;
+  object-fit: cover;
+}
+
+.call-panel-local-video {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 80px;
+  height: 60px;
+  border: 1px solid var(--icq-teal-dark);
+  border-radius: 4px;
+  object-fit: cover;
+  background: #222;
+}
+
+.call-panel-status {
+  margin: 4px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.call-panel-badge {
+  font-size: 0.70rem;
+  color: var(--icq-text-dim);
+  font-style: italic;
+}
+
+.call-panel-upgrade-request {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--icq-teal-light);
+}
+
+.call-panel-controls {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Shared control button style */
+.call-panel-btn {
+  background: var(--icq-bg);
+  border: 1px solid var(--icq-border);
+  border-radius: 3px;
+  color: var(--icq-text);
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.call-panel-btn:hover:not(:disabled) {
+  background: var(--icq-bg-light);
+  border-color: var(--icq-teal);
+  color: var(--icq-teal-light);
+}
+
+.call-panel-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Active (muted / camera-off) */
+.call-panel-btn--active {
+  background: var(--icq-bg-light);
+  border-color: var(--icq-teal);
+  color: var(--icq-teal-light);
+}
+
+/* Hang Up */
+.call-panel-btn--end {
+  background: linear-gradient(180deg, #cc4444 0%, #992222 100%);
+  border-color: #992222;
+  color: #fff;
+  margin-left: auto;
+}
+
+.call-panel-btn--end:hover:not(:disabled) {
+  background: linear-gradient(180deg, #dd5555 0%, #cc4444 100%);
+  border-color: #cc4444;
+  color: #fff;
+}
+
+/* ── Ended ── */
+.call-panel--ended {
+  border-color: var(--icq-border);
+  opacity: 0.85;
+  font-size: 0.80rem;
+  color: var(--icq-text-dim);
+  font-style: italic;
+  padding: 10px 14px;
+  animation: none;
+}

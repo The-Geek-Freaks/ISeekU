@@ -4,6 +4,8 @@ import './ChatWindow.css';
 import StyledBody from './icq/StyledBody';
 import FormatToolbar from './icq/FormatToolbar';
 import GameSession from './icq/GameSession';
+import CallPanel from './icq/CallPanel';
+import FileTransfer from './icq/FileTransfer';
 import { toggleStyle } from '../messageStyling';
 
 function formatTime(ts) {
@@ -147,6 +149,14 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
   const [showGameMenu, setShowGameMenu] = useState(false);
   // Peer game to initiate; set when the Owner picks a p2p game from the menu.
   const [initiateGame, setInitiateGame] = useState(null);
+  // 'audio' | 'video' | null — triggers CallPanel to place an outgoing call.
+  const [initiateCall, setInitiateCall] = useState(null);
+  // Non-null file path triggers FileTransfer to begin a p2p send to this Contact.
+  const [triggerP2pFile, setTriggerP2pFile] = useState(null);
+  // True when the current Contact has advertised the ISeekU file-transfer capability.
+  // Queried from the full contact list (which carries peer.directFileTransfer) because
+  // the chat prop that ChatApp builds does not include the peer field.
+  const [icqPeerCanTransfer, setIcqPeerCanTransfer] = useState(false);
   const gameBtnRef = useRef(null);
   const gameMenuRef = useRef(null);
   const [lightbox, setLightbox] = useState(null);
@@ -206,6 +216,27 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
   }, [fontSize]);
   const smaller = () => setFontSize(f => Math.max(10, f - 1));
   const larger  = () => setFontSize(f => Math.min(20, f + 1));
+
+  // Discover whether the current ICQ Contact supports direct file transfer.
+  // bridge.js sets peer.directFileTransfer from Entity Capabilities, but only
+  // on the full contact list — the chat prop that ChatApp serialises omits it.
+  // We query getContacts() once and subscribe to updates so the button state
+  // stays accurate when capabilities arrive after the chat is already open.
+  useEffect(() => {
+    if (chat?.service !== 'icq' || chat?.isGroup) { setIcqPeerCanTransfer(false); return; }
+    const checkContacts = (contacts) => {
+      const match = (contacts || []).find(c => {
+        const cid = typeof c.jid === 'string' ? c.jid : String(c.jid || c.id || '');
+        return cid === chat.id || cid.split('@')[0] === chat.id || cid === chat.id.split('@')[0];
+      });
+      setIcqPeerCanTransfer(!!match?.peer?.directFileTransfer);
+    };
+    window.api?.icq?.getContacts?.()
+      .then(checkContacts)
+      .catch(() => setIcqPeerCanTransfer(false));
+    const unsub = window.api?.icq?.onContacts?.(checkContacts);
+    return () => unsub?.();
+  }, [chat?.id, chat?.service, chat?.isGroup]);
 
   // Resizable divider drag
   useEffect(() => {
@@ -438,7 +469,15 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
 
   const handleFileBtn = async () => {
     const filePath = await window.api?.openFileDialog?.();
-    if (filePath) onSendFile?.(filePath);
+    if (!filePath) return;
+    // Route to the p2p transfer component when the Contact is a verified ISeekU
+    // peer that has advertised the direct file-transfer capability. Anyone else
+    // (WhatsApp, ICQ web, group chats) uses the original upload path.
+    if (icqPeerCanTransfer) {
+      setTriggerP2pFile(filePath);
+    } else {
+      onSendFile?.(filePath);
+    }
   };
 
   const startRecording = async () => {
@@ -788,6 +827,25 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
             onClick={() => setShowGameMenu(v => !v)}
           >🎮</button>
 
+          {/* Call buttons — only for ICQ Contacts confirmed to run ISeekU (bridge
+              marks chat.hasISeekU from Entity Capabilities). Shown in the
+              toolbar so they stay accessible during an active call. */}
+          {chat?.service === 'icq' && !chat?.isGroup && chat?.hasISeekU && (
+            <>
+              <span className="toolbar-sep" aria-hidden="true" />
+              <button
+                className="toolbar-btn"
+                title="Audio Call"
+                onClick={() => setInitiateCall('audio')}
+              >📞</button>
+              <button
+                className="toolbar-btn"
+                title="Video Call"
+                onClick={() => setInitiateCall('video')}
+              >📹</button>
+            </>
+          )}
+
           {showGameMenu && (
             <div className="game-menu" ref={gameMenuRef}>
               <div className="game-menu-title">🎮 ICQ Spiele</div>
@@ -933,6 +991,31 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
           contactName={chat.name || chat.id}
           initiateGame={initiateGame}
           onInitiateClear={() => setInitiateGame(null)}
+        />
+      )}
+
+      {/* Call panel — always mounted for ICQ 1-to-1 chats so that incoming
+          call-offer signals are handled even when the toolbar buttons are hidden
+          (the far end may run ISeekU even if the bridge hasn't confirmed it). */}
+      {chat?.service === 'icq' && !chat?.isGroup && (
+        <CallPanel
+          jid={chat.id}
+          contactName={chat.name || chat.id}
+          initiateCall={initiateCall}
+          onInitiateCallClear={() => setInitiateCall(null)}
+        />
+      )}
+
+      {/* File transfer — mounted for ICQ 1-to-1 chats to handle inbound p2p-offer
+          signals even when the Contact has not yet been confirmed as ISeekU.
+          The component itself guards against accepting while the peer-capability
+          flag is still unknown. */}
+      {chat?.service === 'icq' && !chat?.isGroup && (
+        <FileTransfer
+          jid={chat.id}
+          contactName={chat.name || chat.id}
+          triggerFile={triggerP2pFile}
+          onTriggerClear={() => setTriggerP2pFile(null)}
         />
       )}
 

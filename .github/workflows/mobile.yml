@@ -89,8 +89,12 @@ jobs:
             exit 0
           fi
           printf '%s' "$KEYSTORE_BASE64" | base64 -d > release.jks
+          # An absolute path, because `storeFile` is resolved relative to the
+          # module that reads it -- app/ -- not to the directory holding
+          # keystore.properties. A bare filename sent Gradle looking in
+          # app/release.jks and the build failed on a key that was right there.
           cat > keystore.properties <<EOF
-          storeFile=release.jks
+          storeFile=$(pwd)/release.jks
           storePassword=$KEYSTORE_PASSWORD
           keyAlias=$KEY_ALIAS
           keyPassword=$KEY_PASSWORD

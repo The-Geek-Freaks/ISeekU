@@ -276,7 +276,10 @@ export default function Preferences({
                     <span>minutes</span>
                   </div>
                 </Field>
-                <Field label="N/A after" htmlFor="pref-idle-na">
+                {/* Counts from when Away began, not from the last keystroke —
+                    which is how the original worked. See
+                    docs/ORIGINAL-REFERENCE.md. */}
+                <Field label="N/A after" htmlFor="pref-idle-na" hint="Counted from when Away began, not from your last keystroke.">
                   <div className="icq-pref-row">
                     <NumberField
                       id="pref-idle-na"

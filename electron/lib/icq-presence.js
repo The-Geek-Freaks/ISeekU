@@ -26,14 +26,14 @@ const ICQ_NS = 'urn:iseeku:status:0';
  *             this Status. This is the ICQ rule, not an XMPP one.
  */
 const STATUSES = Object.freeze({
-  online: { label: 'Online', show: null, available: true, autoReply: false },
+  online: { label: 'Available/Connect', show: null, available: true, autoReply: false },
   chat: { label: 'Free For Chat', show: 'chat', available: true, autoReply: false },
   away: { label: 'Away', show: 'away', available: true, autoReply: true },
-  na: { label: 'N/A', show: 'xa', available: true, autoReply: true },
-  occupied: { label: 'Occupied', show: 'dnd', available: true, autoReply: true },
-  dnd: { label: 'DND', show: 'dnd', available: true, autoReply: true },
-  invisible: { label: 'Invisible', show: null, available: false, autoReply: false },
-  offline: { label: 'Offline', show: null, available: false, autoReply: false },
+  na: { label: 'N/A (Extended Away)', show: 'xa', available: true, autoReply: true },
+  occupied: { label: 'Occupied (Urgent Msgs)', show: 'dnd', available: true, autoReply: true },
+  dnd: { label: 'DND (Do not Disturb)', show: 'dnd', available: true, autoReply: true },
+  invisible: { label: 'Privacy (Invisible)', show: null, available: false, autoReply: false },
+  offline: { label: 'Offline/Disconnect', show: null, available: false, autoReply: false },
 });
 
 const STATUS_ORDER = Object.freeze([

@@ -15,16 +15,25 @@ import './StatusMenu.css';
  *     why picking Occupied starts answering people on your behalf.
  */
 
-/** ICQ's order, with the descriptions the original showed. */
+/**
+ * ICQ's order, with ICQ's own labels.
+ *
+ * The parenthetical halves are not decoration, they are the explanation, and
+ * dropping them loses the distinction. "Occupied (Urgent Msgs)" tells you that
+ * urgent messages still get through — which is exactly what separates it from
+ * DND, and is invisible if the label is just "Occupied".
+ *
+ * Verified from screenshots of the real status menu.
+ */
 const STATUSES = [
-  { name: 'online', label: 'Online', hint: 'Available' },
+  { name: 'online', label: 'Available/Connect', hint: 'Reachable' },
   { name: 'chat', label: 'Free For Chat', hint: 'Looking for someone to talk to' },
   { name: 'away', label: 'Away', hint: 'Stepped out', autoReply: true },
-  { name: 'na', label: 'N/A', hint: 'Away for a while', autoReply: true },
-  { name: 'occupied', label: 'Occupied', hint: 'Busy, but reachable', autoReply: true },
-  { name: 'dnd', label: 'DND', hint: 'Do not disturb', autoReply: true },
-  { name: 'invisible', label: 'Invisible', hint: 'Appear offline, stay connected' },
-  { name: 'offline', label: 'Offline', hint: 'Sign out' },
+  { name: 'na', label: 'N/A (Extended Away)', hint: 'Away for a while', autoReply: true },
+  { name: 'occupied', label: 'Occupied (Urgent Msgs)', hint: 'Busy — urgent messages still arrive', autoReply: true },
+  { name: 'dnd', label: 'DND (Do not Disturb)', hint: 'Nothing gets through', autoReply: true },
+  { name: 'invisible', label: 'Privacy (Invisible)', hint: 'Appear offline, stay connected' },
+  { name: 'offline', label: 'Offline/Disconnect', hint: 'Sign out' },
 ];
 
 const HISTORY_KEY = 'icq-status-history';

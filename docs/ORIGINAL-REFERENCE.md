@@ -239,3 +239,144 @@ a niche feature, it was most of what people did with the client. It also shows
 skins changed background imagery, not only colours — which is the gap the
 current JSON theme format deliberately does not fill, and the reason a
 separate, safe mechanism for user-chosen local images is worth building.
+
+---
+
+## Preferences — VERIFIED from screenshots of the real dialogs
+
+This was the largest remaining gap: no archive search turned up a preferences
+dialog in either era, so the settings dialog was built from what the client
+could actually do rather than from the original's structure. These screenshots
+settle it.
+
+### The eight Statuses — the exact labels
+
+The status menu, verified from two separate screenshots:
+
+| Label as ICQ wrote it | What this project currently calls it |
+|---|---|
+| `Available/Connect` | Online |
+| `Free For Chat` | Free For Chat ✓ |
+| `Away` | Away ✓ |
+| `N/A (Extended Away)` | N/A |
+| `Occupied (Urgent Msgs)` | Occupied |
+| `DND (Do not Disturb)` | DND |
+| `Privacy (Invisible)` | Invisible |
+| `Offline/Disconnect` | Offline |
+
+The parenthetical halves are not decoration — they are the explanation. "Urgent
+Msgs" tells you Occupied still lets urgent messages through, which is exactly
+the distinction from DND that the bare word loses.
+
+### The idle rules — one of them is not what it looks like
+
+From the classic Owner Prefs, Status tab:
+
+- Automatically set **Away** when the screen saver is activated
+- Automatically set **Away** after `N` minutes of *not using the computer*
+- Automatically set **N/A** after `N` minutes **of Away**
+- Show messages in tray in all status modes
+- Disable "Online Alert" messages in Away, DND, N/A and Occupied
+
+**The N/A threshold counts from when Away began, not from the last activity.**
+Defaults seen: Away after 2 minutes, N/A after 5 minutes *of Away*. This
+project currently treats both as absolute idle time, which is wrong.
+
+The same tab held the per-status default away message, with a **Presets**
+dropdown and a *Rename Presets* button — one canned message per status,
+editable and named. One German screenshot shows a DND preset reading
+"Ich will jetzt nicht gestört werden".
+
+### Classic-era Owner Preferences — the page list
+
+Down the left, with icons:
+
+Contact List · Miscellaneous · Status Mode · Connections · Alerts and
+Notifications · Shortcut Bar · Edit Launch List · Voice Message · File
+Transfer · URL Messages · Old Friends Invitation · SMS Messages · Email
+Preferences · ICQ Email Import
+
+An earlier variant also shows *Invite Old Friends / Associations*.
+
+Buttons along the bottom: **Web Information**, **Restore ICQ Defaults**, then
+**OK / Cancel / Apply**.
+
+The Connections page carried four tabs — General, **Server**, Firewall, User —
+with the ICQ server host and port (`login.icq.com`, `5190`), *Auto Configure*
+and *Reset* buttons, proxy settings (Not using Firewall / Using Firewall, with
+SOCKS 4, SOCKS 5 or HTTPS), and a **Keep connection alive** checkbox.
+
+An older tabbed layout put everything across the top instead: Internet
+Phone/Games/Chat · Servers · Connection · Random Chat · Telephone, and below
+that Contact List · Events · Status · Accept · E-Mail · Check E-Mail.
+
+### ICQ 6/7 Options — the page list
+
+Grouped, down the left:
+
+- **Customization:** General · Tweak my ICQ · Notifications · Messages & Files
+- **Privacy & Security:** Privacy · Privacy Lists · History
+- **Advanced:** Connection · SMS & Phone · Advanced
+
+The General page:
+
+- Open ICQ on startup · ICQ always on top · Show "Welcome Screen" when ICQ starts
+- Contact List: remember web search history; what a double-click does —
+  *Open a message* or *Start a call*
+- Status Options: show me as Away after `N` minutes · show me as N/A after `N`
+  minutes · **show me as Occupied when running full-screen applications** ·
+  block notifications and auto-reply invitations when Occupied · forward
+  messages to my mobile when N/A or offline
+
+The full-screen rule is a good idea that predates every "do not disturb while
+presenting" feature by a decade.
+
+### ICQ 8 Settings — the page list
+
+- **Customization:** Tweak my ICQ · Status · Contact list · My Networks
+- **Messaging:** Messages · SMS · File transfer · History · Audio & Video
+- **Advanced:** Sign in · Privacy · Connection
+
+Audio & Video listed camera, microphone and speaker pickers each with a
+*Check* link, plus: play a ringtone on incoming call · notify about incoming
+calls · receive calls from contacts not in the contact list · save call
+history.
+
+### ICQ 7 Preferences — tabs across the top
+
+Connection · Messages · Contact list · Privacy · General · Notifications ·
+Voice and video · Language · **Accounts**
+
+The Accounts page is the interesting one: it connected Facebook, Google Talk,
+Google Mail, Yahoo, Odnoklassniki and VKontakte into one contact list. That is
+the same idea this project inherited as the WhatsApp and Telegram tabs — ICQ
+got there first.
+
+### Per-contact Alert/Accept Modes — VERIFIED from an ICQ 99 context menu
+
+A submenu on each contact, which is a finer-grained privacy model than most
+modern messengers have:
+
+- **User Alerts:** Sound Events · Online Alert · Contact List Popup
+- **Auto:** Auto Accept Chat · Auto Add URL · Auto Receive File
+- **Accept:** Accept In DND · Accept In Occupied · Accept In N/A · Accept In Away
+- **Online Status:** Away To User · Invisible To User · Visible To User ·
+  Access To File Server
+
+"Accept In DND" per contact means specific people could reach you through Do
+Not Disturb. That is worth rebuilding — it is the thing every modern messenger
+fails to offer.
+
+### German strings — more, from a Kopete screenshot
+
+Kopete is not ICQ, so these are a third-party translation rather than ICQ's
+own, and are marked accordingly. They are still useful as evidence of the
+vocabulary German users had for these concepts:
+
+`Autorisierung erforderlich, bevor jemand Sie zu seiner Kontaktliste
+hinzufügen kann` · `IP-Adresse ausblenden` · `Verbindungseinstellungen` ·
+`Einstellungen zur Privatsphäre` · `Direktverbindungs-Einstellungen` ·
+`Zeitüberschreitung nach (Sekunden)` · `Standardkodierung für Nachrichten`
+
+The last one is a reminder that this era predated universal UTF-8 — the default
+was `Windows-1252 Westeuropäisch`.

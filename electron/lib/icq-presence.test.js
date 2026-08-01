@@ -123,7 +123,8 @@ describe('the Status menu', () => {
   });
 
   it('gives every entry a human label', () => {
-    expect(statusMenu().find((s) => s.name === 'na').label).toBe('N/A');
+    // ICQ's own label, parenthetical and all — see docs/ORIGINAL-REFERENCE.md.
+    expect(statusMenu().find((s) => s.name === 'na').label).toBe('N/A (Extended Away)');
     expect(statusMenu().find((s) => s.name === 'chat').label).toBe('Free For Chat');
   });
 });

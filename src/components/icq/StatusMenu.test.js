@@ -6,20 +6,32 @@ import StatusMenu, { HISTORY_KEY, HISTORY_MAX } from './StatusMenu';
 
 beforeEach(() => localStorage.clear());
 
+/**
+ * Find a status item by its visible label.
+ *
+ * The accessible name includes the icon's title and the 'auto' marker, so
+ * matching on role+name is ambiguous once labels share words — "Away" is
+ * inside "N/A (Extended Away)".
+ */
+const statusItem = (label) => screen.getAllByRole('menuitemradio')
+  .find((b) => b.querySelector('.icq-status-label').textContent === label);
+
+
 describe('the Status list', () => {
   it('offers all eight Statuses in ICQ order', () => {
     render(<StatusMenu />);
     const labels = screen.getAllByRole('menuitemradio')
       .map((b) => b.querySelector('.icq-status-label').textContent);
     expect(labels).toEqual([
-      'Online', 'Free For Chat', 'Away', 'N/A', 'Occupied', 'DND', 'Invisible', 'Offline',
+      'Available/Connect', 'Free For Chat', 'Away', 'N/A (Extended Away)',
+      'Occupied (Urgent Msgs)', 'DND (Do not Disturb)', 'Privacy (Invisible)', 'Offline/Disconnect',
     ]);
   });
 
   it('marks the current Status', () => {
     render(<StatusMenu current="away" />);
-    expect(screen.getByRole('menuitemradio', { name: /Away/ })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByRole('menuitemradio', { name: /^Online/ })).toHaveAttribute('aria-checked', 'false');
+    expect(statusItem('Away')).toHaveAttribute('aria-checked', 'true');
+    expect(statusItem('Available/Connect')).toHaveAttribute('aria-checked', 'false');
   });
 
   it('flags exactly the Statuses that answer on the Owner behalf', () => {
@@ -28,14 +40,14 @@ describe('the Status list', () => {
       .filter((b) => b.querySelector('.icq-status-auto'))
       .map((b) => b.querySelector('.icq-status-label').textContent);
     // Picking Occupied starting to reply for you should not be a surprise.
-    expect(flagged).toEqual(['Away', 'N/A', 'Occupied', 'DND']);
+    expect(flagged).toEqual(['Away', 'N/A (Extended Away)', 'Occupied (Urgent Msgs)', 'DND (Do not Disturb)']);
   });
 
   it('reports the chosen Status and the Status Text together', async () => {
     const user = userEvent.setup();
     const onChange = jest.fn();
     render(<StatusMenu onChange={onChange} statusText="Just Vibing" />);
-    await user.click(screen.getByRole('menuitemradio', { name: /Away/ }));
+    await user.click(statusItem('Away'));
     expect(onChange).toHaveBeenCalledWith('away', 'Just Vibing');
   });
 
@@ -43,7 +55,7 @@ describe('the Status list', () => {
     const user = userEvent.setup();
     const onClose = jest.fn();
     render(<StatusMenu onClose={onClose} onChange={() => {}} />);
-    await user.click(screen.getByRole('menuitemradio', { name: /DND/ }));
+    await user.click(statusItem('DND (Do not Disturb)'));
     expect(onClose).toHaveBeenCalled();
   });
 });
@@ -54,7 +66,7 @@ describe('Status Text', () => {
     const onChange = jest.fn();
     render(<StatusMenu onChange={onChange} />);
     await user.type(screen.getByLabelText(/Status message/i), 'in a meeting');
-    await user.click(screen.getByRole('menuitemradio', { name: /Occupied/ }));
+    await user.click(statusItem('Occupied (Urgent Msgs)'));
     expect(onChange).toHaveBeenCalledWith('occupied', 'in a meeting');
   });
 
@@ -71,7 +83,7 @@ describe('Status Text', () => {
     const onChange = jest.fn();
     render(<StatusMenu onChange={onChange} />);
     await user.type(screen.getByLabelText(/Status message/i), '  spaced  ');
-    await user.click(screen.getByRole('menuitemradio', { name: /^Online/ }));
+    await user.click(statusItem('Available/Connect'));
     expect(onChange).toHaveBeenCalledWith('online', 'spaced');
   });
 });
@@ -98,7 +110,7 @@ describe('remembering Status Texts', () => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(['old']));
     render(<StatusMenu onChange={() => {}} />);
     await user.type(screen.getByLabelText(/Status message/i), 'new');
-    await user.click(screen.getByRole('menuitemradio', { name: /^Online/ }));
+    await user.click(statusItem('Available/Connect'));
     expect(JSON.parse(localStorage.getItem(HISTORY_KEY))).toEqual(['new', 'old']);
   });
 
@@ -106,14 +118,14 @@ describe('remembering Status Texts', () => {
     const user = userEvent.setup();
     localStorage.setItem(HISTORY_KEY, JSON.stringify(['a', 'b']));
     render(<StatusMenu onChange={() => {}} statusText="b" />);
-    await user.click(screen.getByRole('menuitemradio', { name: /^Online/ }));
+    await user.click(statusItem('Available/Connect'));
     expect(JSON.parse(localStorage.getItem(HISTORY_KEY))).toEqual(['b', 'a']);
   });
 
   it('does not store an empty line', async () => {
     const user = userEvent.setup();
     render(<StatusMenu onChange={() => {}} />);
-    await user.click(screen.getByRole('menuitemradio', { name: /^Online/ }));
+    await user.click(statusItem('Available/Connect'));
     expect(localStorage.getItem(HISTORY_KEY)).toBeNull();
   });
 
@@ -124,7 +136,7 @@ describe('remembering Status Texts', () => {
     ));
     render(<StatusMenu onChange={() => {}} />);
     await user.type(screen.getByLabelText(/Status message/i), 'newest');
-    await user.click(screen.getByRole('menuitemradio', { name: /^Online/ }));
+    await user.click(statusItem('Available/Connect'));
     const stored = JSON.parse(localStorage.getItem(HISTORY_KEY));
     expect(stored).toHaveLength(HISTORY_MAX);
     expect(stored[0]).toBe('newest');

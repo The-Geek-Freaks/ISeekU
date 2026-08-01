@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - 'v*'
+  # A tag pushed before Actions were enabled on this repository never triggered
+  # a build, and there was no way to start one afterwards. This lets any
+  # existing tag be built on demand.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v2.0.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -27,6 +36,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # A tag push already points at the tag; a manual run must be told.
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,7 +50,8 @@ jobs:
         shell: bash
         run: |
           PKG=$(node -p "require('./package.json').version")
-          TAG="${GITHUB_REF_NAME#v}"
+          REF="${{ inputs.tag || github.ref_name }}"
+          TAG="${REF#v}"
           echo "package.json=$PKG  tag=$TAG"
           if [ "$PKG" != "$TAG" ]; then
             echo "::error::Tag v$TAG does not match package.json version $PKG — aborting so we never ship mislabeled binaries again."
@@ -119,33 +132,59 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ICQ Messenger ${{ github.ref_name }}
+          name: ISeekU ${{ inputs.tag || github.ref_name }}
+          tag_name: ${{ inputs.tag || github.ref_name }}
           body: |
-            ## ICQ Messenger ${{ github.ref_name }}
-
-            Retro ICQ 5-style multi-messenger for WhatsApp + Telegram.
+            ICQ, rebuilt — numeric UINs, the Contact List, all eight Statuses —
+            speaking XMPP against the icqr.net network, with WhatsApp and
+            Telegram alongside it.
 
             ### Downloads
-            | Plattform | Datei | Hinweis |
-            |-----------|-------|---------|
-            | Windows | `ICQ-Messenger-Setup-*.exe` | Installer (empfohlen) |
-            | Windows | `ICQ-Messenger-*-Portable.exe` | Portable - Login bleibt im `ICQ-Data`-Ordner daneben |
-            | macOS | `ICQ-Messenger-*.dmg` | arm64 (M1/M2/M3 nativ, Intel via Rosetta 2) |
-            | Linux | `ICQ-Messenger-*.AppImage` | Portable, direkt ausfuehrbar |
-            | Linux | `icq-messenger_*.deb` | Debian/Ubuntu |
 
-            ### Portable Windows
-            `ICQ-Data`-Ordner neben der `.exe` behaelt Login-Session. Einfach beide zusammen kopieren (z.B. auf USB-Stick).
+            | Platform | File | Notes |
+            |---|---|---|
+            | Windows | `ISeekU-Setup-*.exe` | Installer |
+            | Windows | `ISeekU-*-Portable.exe` | No installation; keeps its data in `ICQ-Data` beside the executable |
+            | macOS | `ISeekU-*.dmg` | arm64 — native on Apple silicon, Rosetta 2 on Intel |
+            | Linux | `ISeekU-*.AppImage` | Portable, runs anywhere |
+            | Linux | `iseeku_*.deb` | Debian and Ubuntu |
 
-            ### macOS - "Datei ist beschaedigt"
-            Da die App nicht notarisiert ist, blockiert macOS den Start. **Einmalig** im Terminal:
+            No Android or iOS build. Electron does not run there — but
+            icqr.net speaks standard XMPP, so any XMPP client reaches it.
+            [Conversations](https://f-droid.org/packages/eu.siacs.conversations/)
+            on Android, Monal or Siskin on iOS. Add `<your UIN>@132.145.202.182`
+            and accept the unencrypted connection when asked.
+
+            ### Before you sign in
+
+            **The icqr.net server does not encrypt anything.** No STARTTLS,
+            SASL PLAIN only — measured against the live service. Your password
+            and every message cross the network readable by anyone on the path.
+
+            ISeekU refuses to connect to such a server unless you say so, and
+            it asks every session. The refusal happens before your password
+            reaches the socket, and an account connected in the clear stays
+            visibly marked while it is signed in.
+
+            ### Unsigned builds
+
+            Windows SmartScreen will warn on first run: *More info* →
+            *Run anyway*.
+
+            macOS blocks unnotarised apps. Once, in Terminal:
+
             ```
-            xattr -cr /Applications/ICQ\ Messenger.app
+            xattr -cr /Applications/ISeekU.app
             ```
-            Danach startet die App normal. Alternativ: Rechtsklick auf .app -> "Oeffnen" -> "Oeffnen" bestaetigen.
 
-            ### Windows - SmartScreen
-            "Weitere Informationen" -> "Trotzdem ausfuehren"
+            Or right-click the app → *Open* → *Open*.
+
+            ### Not affiliated
+
+            with ICQ, its former owners, or the icqr.net project. The interface
+            is an original recreation. Built on
+            [Felix-Helleckes/ICQ](https://github.com/Felix-Helleckes/ICQ), MIT.
+
           draft: false
           prerelease: false
           generate_release_notes: false

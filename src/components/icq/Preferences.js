@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './Preferences.css';
+import {
+  FONTS,
+  BACKGROUNDS,
+  MIN_SIZE,
+  MAX_SIZE,
+  DEFAULT_APPEARANCE,
+  validateColour,
+} from '../../appearance';
 
 /**
  * Preferences.
@@ -18,13 +26,32 @@ import './Preferences.css';
  */
 
 const PAGES = [
-  { id: 'general', label: 'General' },
-  { id: 'contacts', label: 'Contact List' },
-  { id: 'events', label: 'Events' },
-  { id: 'status', label: 'Status' },
+  { id: 'general',    label: 'General' },
+  { id: 'contacts',   label: 'Contact List' },
+  { id: 'events',     label: 'Events' },
+  { id: 'status',     label: 'Status' },
+  { id: 'appearance', label: 'Appearance' },
   { id: 'connection', label: 'Connection' },
-  { id: 'about', label: 'About' },
+  { id: 'about',      label: 'About' },
 ];
+
+/**
+ * Friendly labels for the built-in background list.
+ *
+ * The keys in BACKGROUNDS are identifiers, not sentences. Showing the
+ * identifier in a select is fine for a developer; showing a label is
+ * better for an Owner choosing how their conversations look.
+ */
+const BG_LABELS = {
+  none:     'None (skin default)',
+  paper:    'Paper',
+  ice:      'Ice blue',
+  dusk:     'Dusk',
+  mint:     'Mint',
+  sunset:   'Sunset',
+  graphite: 'Graphite',
+  cream:    'Cream',
+};
 
 /** Read a boolean the same way the rest of the app does: absent means on. */
 const readBool = (key, dflt = true) => {
@@ -114,6 +141,48 @@ function Check({ id, checked, onChange, children, hint }) {
   );
 }
 
+/**
+ * A text field for a CSS colour value.
+ *
+ * Holds what the Owner is typing as a draft string, the way NumberField does
+ * for its number. On blur or Enter the draft is validated; if the value is
+ * invalid it reverts to whatever was last committed, rather than putting an
+ * unsafe string into the stylesheet. An empty value is specifically allowed:
+ * it means "use the skin's text colour", which is the sensible default when
+ * no preference has been set.
+ */
+function ColourField({ id, value, onCommit }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => { setDraft(value); }, [value]);
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed === '') { onCommit(''); return; }
+    const result = validateColour(trimmed);
+    if (result.error) {
+      // Revert silently rather than leaving the field in an invalid state.
+      // The hint text below the field explains what is accepted.
+      setDraft(value);
+      return;
+    }
+    onCommit(result.value);
+  };
+
+  return (
+    <input
+      id={id}
+      className="icq-input"
+      type="text"
+      value={draft}
+      placeholder="#rrggbb or rgb(…)"
+      maxLength={50}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === 'Enter') commit(); }}
+    />
+  );
+}
+
 export default function Preferences({
   onClose,
   skins = [],
@@ -127,6 +196,8 @@ export default function Preferences({
   onShowOffline,
   awayMessage = '',
   onAwayMessage,
+  appearance = DEFAULT_APPEARANCE,
+  onAppearance,
   connection,
   appVersion,
 }) {
@@ -142,6 +213,12 @@ export default function Preferences({
   const [blinkEnabled, setBlinkEnabled] = useState(() => readBool('icq-blink', true));
   const [startupSound, setStartupSound] = useState(() => readBool('icq-startup-sound', true));
 
+  // Appearance: local state mirrors the prop so controls respond immediately.
+  const [appFont,       setAppFont]       = useState(appearance.fontFamily);
+  const [appSize,       setAppSize]       = useState(appearance.fontSize);
+  const [appColour,     setAppColour]     = useState(appearance.colour);
+  const [appBackground, setAppBackground] = useState(appearance.background);
+
   useEffect(() => { setAway(awayMessage); }, [awayMessage]);
 
   useEffect(() => {
@@ -153,6 +230,22 @@ export default function Preferences({
   const commitAway = useCallback(() => {
     onAwayMessage?.(away.trim());
   }, [away, onAwayMessage]);
+
+  /**
+   * Write every appearance field to localStorage and notify the owner so
+   * the message area picks up the change immediately. The same pattern as
+   * onChooseSkin: the dialog does not apply CSS itself, it hands the value
+   * to whoever owns the DOM.
+   */
+  const persistAppearance = useCallback((next) => {
+    try {
+      localStorage.setItem('icq-chat-font-family', next.fontFamily);
+      localStorage.setItem('icq-chat-font-size',   String(next.fontSize));
+      localStorage.setItem('icq-chat-colour',       next.colour);
+      localStorage.setItem('icq-chat-background',   next.background);
+    } catch { /* private mode */ }
+    onAppearance?.(next);
+  }, [onAppearance]);
 
   return (
     <div className="icq-pref-backdrop" role="presentation" onMouseDown={(e) => {
@@ -233,6 +326,78 @@ export default function Preferences({
                   Message windows open when you click a contact with waiting
                   messages, the way they always did.
                 </p>
+              </>
+            )}
+
+            {page === 'appearance' && (
+              <>
+                {/* These settings change how messages look on the Owner's
+                    screen only. XMPP carries no font or colour information to
+                    the other end — the recipient's client chooses its own
+                    rendering, whatever the Owner picks here. */}
+                <p className="icq-pref-note">
+                  These settings change how messages look on your screen only.
+                  The recipient sees their own client's defaults, not yours.
+                </p>
+                <Field label="Font" htmlFor="pref-app-font">
+                  <select
+                    id="pref-app-font"
+                    className="icq-input"
+                    value={appFont}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setAppFont(v);
+                      persistAppearance({ fontFamily: v, fontSize: appSize, colour: appColour, background: appBackground });
+                    }}
+                  >
+                    {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </Field>
+                <Field label="Size" htmlFor="pref-app-size">
+                  <div className="icq-pref-row">
+                    <NumberField
+                      id="pref-app-size"
+                      value={appSize}
+                      min={MIN_SIZE}
+                      max={MAX_SIZE}
+                      onCommit={(n) => {
+                        setAppSize(n);
+                        persistAppearance({ fontFamily: appFont, fontSize: n, colour: appColour, background: appBackground });
+                      }}
+                    />
+                    <span>pt</span>
+                  </div>
+                </Field>
+                <Field
+                  label="Text colour"
+                  htmlFor="pref-app-colour"
+                  hint="Hex (#rrggbb) or rgb(). Leave empty to use the skin's default colour."
+                >
+                  <ColourField
+                    id="pref-app-colour"
+                    value={appColour}
+                    onCommit={(v) => {
+                      setAppColour(v);
+                      persistAppearance({ fontFamily: appFont, fontSize: appSize, colour: v, background: appBackground });
+                    }}
+                  />
+                </Field>
+                <Field label="Background" htmlFor="pref-app-bg">
+                  <select
+                    id="pref-app-bg"
+                    className="icq-input"
+                    value={appBackground}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setAppBackground(v);
+                      persistAppearance({ fontFamily: appFont, fontSize: appSize, colour: appColour, background: v });
+                    }}
+                  >
+                    {Object.keys(BACKGROUNDS).map((key) => (
+                      <option key={key} value={key}>{BG_LABELS[key] || key}</option>
+                    ))}
+                  </select>
+                </Field>
               </>
             )}
 

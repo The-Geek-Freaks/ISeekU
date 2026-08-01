@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import GAMES from '../games';
 import './ChatWindow.css';
+import StyledBody from './icq/StyledBody';
+import FormatToolbar from './icq/FormatToolbar';
+import { toggleStyle } from '../messageStyling';
 
 function formatTime(ts) {
   const d = new Date(ts * 1000);
@@ -30,22 +33,6 @@ const EMOJIS = [
   '👍','👎','👋','🙏','💪','🤝','👀','❤️','💔','🔥','✨','🎉','💯','🌹','🎶',
   '😤','😡','🤯','😱','🤗','😏','🙄','😒','😩','😫',
 ];
-
-const URL_REGEX = /(https?:\/\/[^\s<>"]+)/g;
-
-function linkify(text) {
-  if (!text) return text;
-  // Split on newlines first to preserve paragraph breaks, then linkify each line
-  return text.split('\n').map((line, lineIdx, lines) => {
-    const parts = line.split(URL_REGEX);
-    const linked = parts.map((part, i) =>
-      URL_REGEX.test(part)
-        ? <a key={i} href={part} onClick={e => { e.preventDefault(); window.api?.openExternal?.(part); }} style={{ color: '#4fc3f7', wordBreak: 'break-all' }}>{part}</a>
-        : part
-    );
-    return lineIdx < lines.length - 1 ? [...linked, <br key={`br-${lineIdx}`} />] : linked;
-  });
-}
 
 // ack: -1=error, 0=pending, 1=sent, 2=delivered, 3=read
 function AckIcon({ ack }) {
@@ -177,6 +164,33 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
   const inputRef  = useRef(null);
   const emojiRef  = useRef(null);
   const emojiBtnRef = useRef(null);
+  // Holds a selection range to restore after a format operation updates the
+  // textarea value. Setting value via setState resets selectionStart to zero,
+  // so the correct position is captured before setText and applied in the
+  // effect that runs once the DOM reflects the new value.
+  const pendingSelectionRef = useRef(null);
+
+  // Restore the selection that applyFormat queued, if any.
+  useEffect(() => {
+    if (!pendingSelectionRef.current) return;
+    const { start, end } = pendingSelectionRef.current;
+    pendingSelectionRef.current = null;
+    if (inputRef.current) {
+      inputRef.current.setSelectionRange(start, end);
+    }
+  }, [text]);
+
+  // Apply a XEP-0393 inline marker to the current selection and restore the
+  // caret so the next keystroke lands in the right place.
+  const applyFormat = (marker) => {
+    const el = inputRef.current;
+    if (!el) return;
+    const { selectionStart, selectionEnd } = el;
+    const result = toggleStyle(text, selectionStart, selectionEnd, marker);
+    pendingSelectionRef.current = { start: result.start, end: result.end };
+    setText(result.text);
+    if (sendFailed) setSendFailed(false);
+  };
 
   // Font-size (shared via localStorage with sidebar)
   const [fontSize, setFontSize] = useState(() => {
@@ -384,6 +398,16 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
   };
 
   const handleKey = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+      e.preventDefault();
+      applyFormat('*');
+      return;
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+      e.preventDefault();
+      applyFormat('_');
+      return;
+    }
     if (e.key === 'Escape') {
       e.preventDefault();
       if (clipboardImage) { setClipboardImage(null); return; }
@@ -716,7 +740,7 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
                       className={msg.type === 'sticker' ? 'msg-sticker' : 'msg-image'}
                       onClick={msg.type !== 'sticker' ? () => setLightbox({ src: msg.mediaData, isVideo: false }) : undefined}
                       style={msg.type !== 'sticker' ? { cursor: 'zoom-in' } : undefined} />
-                : <span className="message-text">{linkify(msg.body) || (msg.type ? `[${msg.type}]` : '')}</span>
+                : <span className="message-text"><StyledBody body={msg.body || (msg.type ? `[${msg.type}]` : '')} /></span>
               }
               <span className="message-time">
                 {formatTime(msg.timestamp)}
@@ -744,6 +768,9 @@ export default function ChatWindow({ chat, messages, onSend, onSendFile, onEditM
         <div className="input-toolbar" style={{ position: 'relative' }}>
           <button className="toolbar-btn font-btn" title="Schrift größer" onClick={larger}>A+</button>
           <button className="toolbar-btn font-btn" title="Schrift kleiner" onClick={smaller}>A-</button>
+          <span className="toolbar-sep" aria-hidden="true" />
+          <FormatToolbar onFormat={applyFormat} />
+          <span className="toolbar-sep" aria-hidden="true" />
           <button
             ref={emojiBtnRef}
             className={`toolbar-btn${showEmoji ? ' active' : ''}`}

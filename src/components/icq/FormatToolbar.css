@@ -1,0 +1,62 @@
+/*
+ * Styles for the formatting toolbar buttons.
+ *
+ * The four buttons sit inside the existing .input-toolbar strip, inheriting
+ * its background. Visually they match .toolbar-btn from ChatWindow.css —
+ * transparent background, border that appears on hover, dim text that
+ * brightens — so they blend with the font-size buttons already in the bar.
+ *
+ * The label of each button carries the style it applies: the Bold label is
+ * bold, the Italic label is italic, the Strikethrough label is struck through,
+ * and the Monospace label uses a monospace face. This makes each button
+ * self-describing without needing extra icons or tooltips for sighted users,
+ * while the title and aria-label attributes cover everyone else.
+ *
+ * All colours come from the theme's custom properties so the buttons follow
+ * whichever skin is active. The icq99 skin already suppresses border-radius
+ * and transitions on every element in the document — the !important rules in
+ * that skin reach these buttons without this file knowing about it.
+ */
+
+.format-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.format-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: var(--icq-text-dim, #7A90A8);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.1;
+  min-width: 22px;
+  padding: 2px 6px;
+  text-align: center;
+}
+
+.format-btn:hover {
+  background: var(--icq-bg-light, #2E3748);
+  border-color: var(--icq-border, #3A4A5E);
+  color: var(--icq-text, #E0E8F0);
+}
+
+.format-btn:focus-visible {
+  outline: 1px dotted var(--icq-teal, #1A8A8A);
+  outline-offset: 1px;
+}
+
+.format-btn:active {
+  background: var(--icq-btn-active, #1A8A8A);
+  border-color: var(--icq-teal-dark, #0E5F5F);
+  color: var(--icq-white, #ffffff);
+}
+
+/* Each label carries the style it applies, making the button self-describing. */
+.fmt-btn-bold   { font-weight: bold; }
+.fmt-btn-italic { font-style: italic; }
+.fmt-btn-strike { text-decoration: line-through; }
+.fmt-btn-mono   { font-family: monospace; font-size: 12px; letter-spacing: -0.03em; }

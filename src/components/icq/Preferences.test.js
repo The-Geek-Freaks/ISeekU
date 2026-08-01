@@ -21,7 +21,7 @@ describe('the pages', () => {
     // No SMS, no ICQ Phone, no Web Aware. A dialog full of dead controls
     // would look more complete and be a promise the client cannot keep.
     expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual([
-      'General', 'Contact List', 'Events', 'Status', 'Connection', 'About',
+      'General', 'Contact List', 'Events', 'Status', 'Appearance', 'Connection', 'About',
     ]);
   });
 
